@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -30,6 +31,7 @@ from tools import PRODUCTS_BY_ID  # noqa: E402
 
 CASES_PATH = ROOT / "data" / "test_cases.json"
 RESULTS_ROOT = ROOT / "eval" / "results"
+BENCHMARK_MODEL = os.getenv("BENCHMARK_MODEL", "google/gemini-3.1-flash-lite")
 
 
 def failed_constraints(product: dict[str, Any], constraints: dict[str, Any]) -> list[str]:
@@ -68,7 +70,7 @@ def evaluate(cases: list[dict[str, Any]]) -> int:
 
     for case in cases:
         try:
-            final_text, trajectory, product_id = run_agent(case["query"])
+            final_text, trajectory, product_id = run_agent(case["query"], model=BENCHMARK_MODEL)
         except OpenRouterError as error:
             trace = {
                 "case_id": case["id"],
@@ -105,7 +107,8 @@ def evaluate(cases: list[dict[str, Any]]) -> int:
         (run_dir / f"{case['id']}.json").write_text(json.dumps(trace, indent=2) + "\n")
 
     score = round((passed / len(cases)) * 100) if cases else 0
-    print(f"\nPASSED {passed} / {len(cases)}  ({score}%)")
+    print(f"\nBENCHMARK MODEL {BENCHMARK_MODEL}")
+    print(f"PASSED {passed} / {len(cases)}  ({score}%)")
     print(f"Traces written to {run_dir.relative_to(ROOT)}")
     return passed
 

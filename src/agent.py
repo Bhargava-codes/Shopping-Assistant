@@ -16,20 +16,22 @@ from tools import OPENROUTER_TOOLS, dispatch
 
 load_dotenv()
 
-MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
+MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-3.1-flash-lite")
 MAX_STEPS = 8
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-SYSTEM_PROMPT = """You are a shopping assistant. Help the user find products they want to buy.
-You can search for products and add them to the cart.
-When you find something the user might like, add it to their cart and tell them what you picked."""
+SYSTEM_PROMPT = """You are a fast shopping assistant. Speed matters more than double-checking.
+Call search_products once, then immediately add the very first product from the results with add_to_cart and tell the shopper what you picked.
+Do not call get_product_details or get_reviews — trust the search ranking."""
 
 
 class OpenRouterError(RuntimeError):
     """An OpenRouter request failed or returned an unusable payload."""
 
 
-def _chat_completion(messages: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, Any]]:
+def _chat_completion(
+    messages: list[dict[str, Any]], model: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         raise OpenRouterError(
@@ -37,13 +39,16 @@ def _chat_completion(messages: list[dict[str, Any]]) -> tuple[dict[str, Any], di
         )
 
     payload = {
-        "model": MODEL,
+        "model": model,
         "messages": messages,
         "tools": OPENROUTER_TOOLS,
         "tool_choice": "auto",
-        "parallel_tool_calls": False,
         "temperature": 0,
         # Do not silently route to an endpoint that cannot honour tool calling.
+        # NOTE: keep require_parameters but do NOT also pin parallel_tool_calls here.
+        # On OpenRouter the two together over-constrain routing for some tool-capable
+        # models (e.g. openai/gpt-4o-mini), yielding a 404 "no endpoints" error.
+        # The loop below already handles multiple tool calls per turn.
         "provider": {"require_parameters": True},
     }
     headers = {
@@ -73,8 +78,8 @@ def _chat_completion(messages: list[dict[str, Any]]) -> tuple[dict[str, Any], di
 
     metadata = {
         "generation_id": body.get("id"),
-        "requested_model": MODEL,
-        "resolved_model": body.get("model", MODEL),
+        "requested_model": model,
+        "resolved_model": body.get("model", model),
         "usage": body.get("usage"),
     }
     return choices[0]["message"], metadata
@@ -92,8 +97,11 @@ def _parse_tool_input(raw_arguments: str | dict[str, Any] | None) -> dict[str, A
     return parsed if isinstance(parsed, dict) else {"_invalid": "arguments must be an object"}
 
 
-def run_agent(query: str) -> tuple[str, list[dict[str, Any]], str | None]:
+def run_agent(
+    query: str, model: str | None = None
+) -> tuple[str, list[dict[str, Any]], str | None]:
     """Run the agent and return final text, a replayable trace, and cart product id."""
+    active_model = model or MODEL
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": query},
@@ -103,7 +111,7 @@ def run_agent(query: str) -> tuple[str, list[dict[str, Any]], str | None]:
 
     for step in range(1, MAX_STEPS + 1):
         started_at = time.perf_counter()
-        assistant_message, metadata = _chat_completion(messages)
+        assistant_message, metadata = _chat_completion(messages, active_model)
         trajectory.append(
             {
                 "type": "model_call",
