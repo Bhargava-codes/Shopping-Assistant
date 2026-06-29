@@ -9,8 +9,10 @@ from typing import Any
 
 
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "data" / "products.json"
+REVIEWS_PATH = Path(__file__).resolve().parents[1] / "data" / "reviews.json"
 PRODUCTS: list[dict[str, Any]] = json.loads(CATALOG_PATH.read_text())
 PRODUCTS_BY_ID = {product["id"]: product for product in PRODUCTS}
+REVIEW_BANK: dict[str, Any] = json.loads(REVIEWS_PATH.read_text()) if REVIEWS_PATH.exists() else {}
 
 
 def search_products(query: str, max_results: int = 10) -> list[dict[str, Any]]:
@@ -53,10 +55,16 @@ def get_reviews(product_id: str) -> dict[str, Any]:
     product = PRODUCTS_BY_ID.get(product_id)
     if product is None:
         return {"error": "unknown_product", "product_id": product_id}
+    extended = (REVIEW_BANK.get("products") or {}).get(product_id, {})
     return {
         "product_id": product_id,
+        "category": product["category"],
         "num_reviews": product["num_reviews"],
+        "category_review_attributes": (REVIEW_BANK.get("category_review_attributes") or {}).get(
+            product["category"], []
+        ),
         "review_snippets": product["review_snippets"],
+        "reviews": extended.get("reviews", []),
     }
 
 

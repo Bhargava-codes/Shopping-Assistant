@@ -1,107 +1,145 @@
 # Shopping Agent Evaluation
 
-You own a shopping-assistant agent. It can search a local catalogue, inspect product details and
-reviews, and add one product to a cart. The current version works, but its offline evaluation is
-mediocre. Your job is to make it better — and to think like the PM who owns it.
+This repo contains a small shopping assistant. The agent can search a local catalogue, inspect
+product details and reviews, and add one product to a cart.
 
-**Time box: ~1 hour.** Use any AI tooling you like. Narrate the choices you make.
+Start by improving the agent so it chooses the right product more often. If time remains, the
+interviewer may ask you to scope and build a review-insights improvement.
 
-## The task
+## What The Score Means
 
-1. **Move the score.** Improve the agent so it passes more of the 18 evaluation cases. You may
-   change:
-   - the system prompt (`src/agent.py`)
-   - the tool descriptions / schemas (`src/tools.py`)
-   - the loop logic (`src/agent.py`)
-2. **Write up your thinking** in [`SUBMISSION.md`](SUBMISSION.md) (template provided). This matters
-   as much as the score — we are hiring a product manager, not just a prompt.
+Run the benchmark:
 
-### Do not change
-- `data/products.json` (the catalogue)
-- `data/test_cases.json` (the evaluation fixture)
-- the scoring logic in `eval/evaluate.py`
+```bash
+python eval/evaluate.py
+```
 
-If you think the scoring or fixture is wrong or incomplete, **say so in `SUBMISSION.md`** rather
-than editing it.
+It prints a result like:
 
-## Candidate flow
+```text
+PASSED X / 18  (Y%)
+```
 
-This exercise has two surfaces with different jobs:
+Each case is one shopper request. A case passes only when the final product added to the cart
+matches the hard requirements for that request:
 
-1. **Benchmark in the terminal — this is the score of record.** Start by running the full 18-case
-   evaluation. It prints `PASSED X / 18 (Y%)` and writes one trace per case under
-   `eval/results/<timestamp>/`.
-2. **Investigate in the browser — this is where you diagnose.** After a benchmark run, click
-   **Inspect** on any case to open its persisted trace: a per-constraint pass/fail breakdown (the
-   exact reason it failed), the product the agent added, and the full step-by-step trajectory
-   (what it searched, what it opened, what it added). This is how you explain *why* the score
-   moved instead of blindly iterating on prompts. You can also load a fixture into the playground
-   and run it live for exploration.
-3. **Change the agent**, then rerun the same full terminal benchmark.
-4. **Write the product judgment** in `SUBMISSION.md`: what changed, which evidence supports it,
-   what the score misses, and what you would do before production.
+- correct product category
+- within budget
+- high enough rating
+- in stock when required
+- required features are present
 
-The playground and the benchmark both run on the same pinned, latest model
-(`google/gemini-3.1-flash-lite`) so scores are comparable and you **cannot** move the score by
-swapping models. Do not change `BENCHMARK_MODEL`. Changing the playground model in the browser is
-fine for exploration, but it does **not** make a comparable benchmark result.
+The score is intentionally simple: it only checks the final cart product. The traces are there to
+help you understand how the agent got there.
+
+## Where The Cases Come From
+
+The 18 cases in `data/test_cases.json` are seeded examples of common shopping-agent mistakes:
+
+- going over budget
+- choosing the first plausible result too quickly
+- trusting a product without verifying specifications
+- ignoring review quality
+- adding out-of-stock items
+
+Every case has at least one valid product in the local catalogue. The task is to make the agent find
+those products more reliably.
+
+## What You May Change
+
+For the benchmark, focus on the agent behavior:
+
+- `src/agent.py` for the system prompt and agent loop
+- `src/tools.py` for tool descriptions and schemas
+
+For the review-insights task, you may also change:
+
+- `data/reviews.json` for richer review examples
+- `web/` for browser UI changes
+- `src/web.py` for local UI endpoints
+
+You may use any AI tooling you like.
+
+## Do Not Change
+
+- `data/products.json`
+- `data/test_cases.json`
+- `eval/evaluate.py`
+
+If a case or scoring rule seems wrong, bring it up during the interview instead of editing it.
 
 ## Setup
 
-Requirements: Python 3.10+ and an OpenRouter API key for a tool-capable model (we provide one).
+Requirements: Python 3.10+ and an OpenRouter API key. The interviewer will provide the key if
+needed.
 
 ```bash
 cp .env.example .env
 # Set OPENROUTER_API_KEY in .env
 python -m pip install -r requirements.txt
-python eval/evaluate.py                # baseline: wait for all 18 cases
+python eval/evaluate.py
 ```
 
-Both the playground and the benchmark are pinned to `google/gemini-3.1-flash-lite`. The key stays
-local; it is never committed. Your baseline score is the final line printed by
-`python eval/evaluate.py`, not a subjective UI impression.
+The benchmark uses `google/gemini-3.1-flash-lite` so runs are comparable. Do not change
+`BENCHMARK_MODEL` while working on the score.
 
-## Interactive UI
+## Inspect Failures
 
-Run the local operator console to inspect individual failures in a browser:
+Each benchmark run writes traces under `eval/results/<timestamp>/`. These traces show:
+
+- the shopper request
+- the product the agent added
+- which constraints passed or failed
+- the agent's tool calls and steps
+
+You can inspect runs in the browser:
 
 ```bash
 python src/web.py
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The console fetches the live OpenRouter model
-catalog through the local server, lets you load an evaluation fixture, run the agent, inspect every
-tool call, and see actual latency and cost. It also shows the latest **complete** CLI benchmark and
-lists every case with its verdict. After a terminal benchmark, click **Refresh score**, then
-**Inspect** any case to open its persisted trace — the per-constraint pass/fail diagnosis, the
-product the agent added, and the full trajectory. The browser never receives `OPENROUTER_API_KEY`.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000), click **Refresh score**, then inspect failed
+cases.
 
-To try one request and inspect the trace:
+You can also run one request directly:
 
 ```bash
 python src/run_agent.py "Find me a wireless mouse under 2000 with good reviews"
 ```
 
-## What to submit
+## Review-Insights Task
 
-1. Work on **your own branch**.
-2. **Commit your baseline run first.** Run `python eval/evaluate.py` before making changes, so we
-   can see the starting score and traces. Then commit the final run after your changes. Both land
-   in `eval/results/`.
-3. Fill in [`SUBMISSION.md`](SUBMISSION.md), including both scores and trace directories.
-4. Push your branch and share it with us.
+The catalogue has ratings and short review snippets. `data/reviews.json` adds richer review examples
+for selected products across mice, keyboards, headphones, webcams, and monitors.
 
-## Repo map
+You can browse that data in the local UI:
 
-- `data/products.json`: local product catalogue.
-- `data/test_cases.json`: evaluation fixture (18 cases).
-- `src/tools.py`: local tool implementations and tool schemas.
-- `src/agent.py`: model client and agent loop.
-- `src/run_agent.py`: CLI for inspecting individual runs.
-- `eval/evaluate.py`: runs the evaluation and writes trace files under `eval/results/`.
+```bash
+python src/web.py
+```
 
-## Codespaces
+Open [http://127.0.0.1:8000/reviews](http://127.0.0.1:8000/reviews).
 
-If local Python setup is a problem, open this repository in GitHub Codespaces. The included dev
-container installs the only Python dependency automatically; you still need to configure
-`OPENROUTER_API_KEY` as a Codespaces secret or in the environment.
+A useful review feature should help a shopper understand the evidence behind a recommendation. For
+example, it might:
+
+- summarize review signals for one product
+- separate positives from risks
+- adapt the review attributes by category
+- explain whether the reviews support the shopper's stated need
+- change the agent's final answer so it cites review evidence clearly
+
+The goal is not to build a full reviews platform. Pick a small slice, make it work, and be ready to
+explain what you chose not to build.
+
+## Repo Map
+
+- `data/products.json`: local product catalogue
+- `data/reviews.json`: richer review examples for the review-insights task
+- `data/test_cases.json`: benchmark cases
+- `src/tools.py`: local tools and tool schemas
+- `src/agent.py`: model client and agent loop
+- `src/run_agent.py`: CLI for one-off runs
+- `src/web.py`: local browser UI
+- `web/reviews.html`: product and review browser
+- `eval/evaluate.py`: benchmark runner

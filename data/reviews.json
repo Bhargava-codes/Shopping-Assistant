@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "category_review_attributes": {
+    "mouse": ["comfort", "tracking", "connection", "battery", "durability"],
+    "keyboard": ["typing feel", "noise", "layout", "build quality", "reliability"],
+    "headphones": ["sound", "microphone", "comfort", "noise control", "durability"],
+    "webcam": ["image quality", "autofocus", "low light", "microphone", "setup"],
+    "monitor": ["motion", "color", "text clarity", "stand", "panel issues"]
+  },
+  "products": {
+    "p_102": {
+      "reviews": [
+        {"rating": 5, "use_case": "office", "text": "Quiet clicks and comfortable for spreadsheet work, but mine was unavailable when I tried to reorder."},
+        {"rating": 4, "use_case": "travel", "text": "Good value wireless mouse. The AA battery lasted longer than expected."},
+        {"rating": 3, "use_case": "shared desk", "text": "Connection is fine once paired, but the stock situation seems inconsistent."},
+        {"rating": 4, "use_case": "home office", "text": "Shape is safe and simple. Not very premium, but easy to recommend if available."}
+      ]
+    },
+    "p_103": {
+      "reviews": [
+        {"rating": 5, "use_case": "long workday", "text": "The ergonomic shape helped a lot during long work sessions."},
+        {"rating": 2, "use_case": "daily office", "text": "Scroll wheel started skipping after a month, which made it frustrating for documents."},
+        {"rating": 4, "use_case": "laptop bag", "text": "Bluetooth pairing was quick and the USB-C charging is convenient."},
+        {"rating": 3, "use_case": "design work", "text": "Comfort is good, but tracking felt less precise than higher priced mice."}
+      ]
+    },
+    "p_104": {
+      "reviews": [
+        {"rating": 5, "use_case": "office", "text": "Battery lasts for months and tracking is reliable on a normal desk."},
+        {"rating": 5, "use_case": "all-day use", "text": "Great fit for medium hands. My wrist felt better than with a flat mouse."},
+        {"rating": 4, "use_case": "hybrid work", "text": "The 2.4GHz receiver has been stable across laptop docks and meeting rooms."},
+        {"rating": 4, "use_case": "budget setup", "text": "Nothing flashy, but it feels like the safest wireless mouse under this price."}
+      ]
+    },
+    "p_108": {
+      "reviews": [
+        {"rating": 5, "use_case": "wrist pain", "text": "The vertical shape reduced wrist strain after a few days of adjustment."},
+        {"rating": 4, "use_case": "office", "text": "Tracking is steady and the wireless receiver has not dropped for me."},
+        {"rating": 3, "use_case": "first vertical mouse", "text": "Takes time to adjust and it is not ideal for fast gaming movements."},
+        {"rating": 4, "use_case": "large hands", "text": "Comfortable grip, though the buttons feel lighter than expected."}
+      ]
+    },
+    "p_110": {
+      "reviews": [
+        {"rating": 5, "use_case": "shared office", "text": "Silent clicks are genuinely quiet and the connection has been dependable."},
+        {"rating": 5, "use_case": "all-day work", "text": "Good all-day comfort with no hand fatigue after a week."},
+        {"rating": 4, "use_case": "multi-device desk", "text": "Switching between Bluetooth and the receiver is useful, though the button is small."},
+        {"rating": 4, "use_case": "productivity", "text": "Precise enough for documents and light design work. Battery life seems strong."}
+      ]
+    },
+    "p_203": {
+      "reviews": [
+        {"rating": 5, "use_case": "gaming", "text": "Clicky keys feel fun and responsive for the price."},
+        {"rating": 2, "use_case": "daily writing", "text": "Several keys started double typing after heavy use."},
+        {"rating": 3, "use_case": "shared room", "text": "Good value, but the blue switches are too loud for calls."},
+        {"rating": 4, "use_case": "first mechanical", "text": "RGB looks nice and the full-size layout is convenient."}
+      ]
+    },
+    "p_204": {
+      "reviews": [
+        {"rating": 5, "use_case": "coding", "text": "Red switches are smooth and the case feels sturdy for the price."},
+        {"rating": 4, "use_case": "desk setup", "text": "Compact layout saves space, but I missed the number pad at first."},
+        {"rating": 5, "use_case": "night work", "text": "Much quieter than blue switch boards and still feels mechanical."},
+        {"rating": 4, "use_case": "gaming", "text": "Stable board with no flex while typing or gaming."}
+      ]
+    },
+    "p_206": {
+      "reviews": [
+        {"rating": 5, "use_case": "shared office", "text": "Quiet in a shared office and comfortable for everyday typing."},
+        {"rating": 4, "use_case": "spreadsheet work", "text": "Full-size layout is useful for numbers and shortcuts."},
+        {"rating": 4, "use_case": "reception desk", "text": "Wireless connection has been stable, with no missed keystrokes so far."},
+        {"rating": 3, "use_case": "heavy typing", "text": "Good for office work, but the typing feel is softer than a mechanical keyboard."}
+      ]
+    },
+    "p_208": {
+      "reviews": [
+        {"rating": 5, "use_case": "gaming", "text": "Bright RGB and satisfying keys. The full layout is good for shortcuts."},
+        {"rating": 4, "use_case": "home desk", "text": "Feels solid, but the blue switches are loud."},
+        {"rating": 3, "use_case": "office", "text": "Good keyboard, wrong choice for a quiet office."},
+        {"rating": 4, "use_case": "budget gaming", "text": "The keys are responsive and the stabilizers are acceptable for the price."}
+      ]
+    },
+    "p_210": {
+      "reviews": [
+        {"rating": 5, "use_case": "office", "text": "Reliable tactile board for work and play, with a familiar full-size layout."},
+        {"rating": 5, "use_case": "data entry", "text": "The number pad matters for my work and the brown switches feel balanced."},
+        {"rating": 4, "use_case": "long writing", "text": "Comfortable typing feel without the sharp click noise."},
+        {"rating": 4, "use_case": "shared workspace", "text": "Still audible, but much easier to live with than blue switches."}
+      ]
+    },
+    "p_303": {
+      "reviews": [
+        {"rating": 5, "use_case": "music", "text": "Good bass and comfortable for short listening sessions."},
+        {"rating": 2, "use_case": "commute", "text": "The hinge cracked after a few weeks in my backpack."},
+        {"rating": 3, "use_case": "video calls", "text": "Mic works, but voices sound thinner than expected."},
+        {"rating": 4, "use_case": "home use", "text": "Battery life is solid for the price."}
+      ]
+    },
+    "p_304": {
+      "reviews": [
+        {"rating": 5, "use_case": "commute", "text": "Effective noise reduction on buses and clear call quality."},
+        {"rating": 4, "use_case": "long flight", "text": "Comfortable for long flights, with no pressure spots after two hours."},
+        {"rating": 5, "use_case": "work calls", "text": "The microphone is clear enough for daily meetings."},
+        {"rating": 4, "use_case": "music", "text": "Sound is balanced rather than bass-heavy, which I prefer."}
+      ]
+    },
+    "p_306": {
+      "reviews": [
+        {"rating": 5, "use_case": "remote work", "text": "Mic is clear for meetings and the headset is light."},
+        {"rating": 4, "use_case": "calls", "text": "Comfortable enough for calls, though not as immersive for music."},
+        {"rating": 4, "use_case": "office", "text": "Wireless connection is stable across a full workday."},
+        {"rating": 3, "use_case": "travel", "text": "On-ear fit gets warm after long sessions."}
+      ]
+    },
+    "p_308": {
+      "reviews": [
+        {"rating": 5, "use_case": "editing", "text": "Neutral sound is useful for editing podcasts and videos."},
+        {"rating": 4, "use_case": "desk audio", "text": "Very good value if you are fine with a cable."},
+        {"rating": 4, "use_case": "monitoring", "text": "Comfort is decent and the sound does not exaggerate bass."},
+        {"rating": 3, "use_case": "mobile", "text": "Great at a desk, but bulky for travel."}
+      ]
+    },
+    "p_310": {
+      "reviews": [
+        {"rating": 5, "use_case": "travel", "text": "Effective ANC in a compact pair and the carry case is useful."},
+        {"rating": 4, "use_case": "commute", "text": "Good noise control without feeling heavy."},
+        {"rating": 5, "use_case": "calls", "text": "Call quality is better than expected for a compact headset."},
+        {"rating": 4, "use_case": "daily use", "text": "Battery lasted several workdays between charges."}
+      ]
+    },
+    "p_403": {
+      "reviews": [
+        {"rating": 5, "use_case": "daylight calls", "text": "Looks good in daylight and setup was simple."},
+        {"rating": 2, "use_case": "meetings", "text": "Autofocus hunts constantly, which is distracting on calls."},
+        {"rating": 3, "use_case": "home office", "text": "Fine for occasional calls, but low-light image gets soft."},
+        {"rating": 4, "use_case": "student setup", "text": "Good enough for classes if the room is bright."}
+      ]
+    },
+    "p_404": {
+      "reviews": [
+        {"rating": 5, "use_case": "daily meetings", "text": "Reliable autofocus and clear meeting audio."},
+        {"rating": 4, "use_case": "home office", "text": "Good low-light performance compared with cheaper webcams."},
+        {"rating": 5, "use_case": "team calls", "text": "Plugged in and worked immediately. Image stays sharp when I move."},
+        {"rating": 4, "use_case": "desk setup", "text": "The mount is stable and the microphone is usable in a quiet room."}
+      ]
+    },
+    "p_406": {
+      "reviews": [
+        {"rating": 5, "use_case": "streaming", "text": "Smooth 60fps video and autofocus keeps up well."},
+        {"rating": 4, "use_case": "office calls", "text": "No issues after months, but it needs a separate microphone for best audio."},
+        {"rating": 5, "use_case": "presentations", "text": "Image is crisp and motion looks natural."},
+        {"rating": 4, "use_case": "low light", "text": "Better than most 1080p webcams, though still benefits from a desk lamp."}
+      ]
+    },
+    "p_408": {
+      "reviews": [
+        {"rating": 5, "use_case": "privacy", "text": "Useful privacy cover and clear picture for normal video calls."},
+        {"rating": 4, "use_case": "office", "text": "Plug and play setup with no driver issues."},
+        {"rating": 4, "use_case": "remote work", "text": "Mic is acceptable and the shutter gives peace of mind."},
+        {"rating": 3, "use_case": "dim room", "text": "Image is good in daylight, but grainier at night."}
+      ]
+    },
+    "p_410": {
+      "reviews": [
+        {"rating": 4, "use_case": "meetings", "text": "Crisp enough for meetings and easy to mount."},
+        {"rating": 3, "use_case": "presentations", "text": "Fixed focus is limiting if you move around."},
+        {"rating": 4, "use_case": "student calls", "text": "Good value for basic classes and calls."},
+        {"rating": 3, "use_case": "low light", "text": "Needs decent lighting to look sharp."}
+      ]
+    },
+    "p_503": {
+      "reviews": [
+        {"rating": 5, "use_case": "gaming", "text": "Fast for games and noticeably smoother than 60Hz."},
+        {"rating": 2, "use_case": "dark games", "text": "Noticeable ghosting in dark scenes."},
+        {"rating": 3, "use_case": "work", "text": "Text is acceptable, but colors shift from the side."},
+        {"rating": 4, "use_case": "budget gaming", "text": "Good if speed matters more than color accuracy."}
+      ]
+    },
+    "p_504": {
+      "reviews": [
+        {"rating": 5, "use_case": "competitive games", "text": "Smooth motion and accurate colors for the price."},
+        {"rating": 4, "use_case": "work and play", "text": "Great value for a 144Hz IPS screen."},
+        {"rating": 5, "use_case": "dual monitor desk", "text": "Text is clear and viewing angles are much better than my old VA panel."},
+        {"rating": 4, "use_case": "gaming", "text": "Stand is basic, but the panel itself is strong."}
+      ]
+    },
+    "p_506": {
+      "reviews": [
+        {"rating": 5, "use_case": "spreadsheets", "text": "Comfortable for spreadsheets and text work all day."},
+        {"rating": 4, "use_case": "home office", "text": "Slim bezels and good color for normal office tasks."},
+        {"rating": 4, "use_case": "coding", "text": "Text clarity is good at 24 inches and 1080p."},
+        {"rating": 3, "use_case": "gaming", "text": "Fine for casual games, but not a gaming-focused monitor."}
+      ]
+    },
+    "p_507": {
+      "reviews": [
+        {"rating": 5, "use_case": "photo work", "text": "Excellent for photo work with sharp QHD text."},
+        {"rating": 4, "use_case": "clean desk", "text": "USB-C makes the desk setup tidy."},
+        {"rating": 5, "use_case": "design", "text": "Color and viewing angles are strong for the price."},
+        {"rating": 4, "use_case": "office", "text": "Great productivity screen, but the refresh rate is not for competitive gaming."}
+      ]
+    },
+    "p_509": {
+      "reviews": [
+        {"rating": 5, "use_case": "gaming", "text": "Crisp QHD gaming with no obvious ghosting."},
+        {"rating": 5, "use_case": "work and gaming", "text": "Strong stand and good color coverage make it useful beyond games."},
+        {"rating": 4, "use_case": "dual purpose desk", "text": "Text is sharp and 144Hz feels smooth."},
+        {"rating": 4, "use_case": "console and PC", "text": "Easy to recommend if the budget stretches to it."}
+      ]
+    },
+    "p_510": {
+      "reviews": [
+        {"rating": 5, "use_case": "immersive games", "text": "The curve feels immersive for games and movies."},
+        {"rating": 3, "use_case": "shared viewing", "text": "Viewing angles are narrow from the side."},
+        {"rating": 3, "use_case": "dark scenes", "text": "Black levels are good, but motion smearing is visible."},
+        {"rating": 4, "use_case": "single-user desk", "text": "Good value if you like curved VA panels."}
+      ]
+    }
+  }
+}

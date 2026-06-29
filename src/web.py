@@ -18,16 +18,24 @@ from urllib.parse import parse_qs, urlparse
 from dotenv import load_dotenv
 
 from agent import MODEL, OpenRouterError, run_agent
+from tools import PRODUCTS, PRODUCTS_BY_ID
 
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = ROOT / "web"
 CASES_PATH = ROOT / "data" / "test_cases.json"
+REVIEWS_PATH = ROOT / "data" / "reviews.json"
 RESULTS_ROOT = ROOT / "eval" / "results"
 CATALOG_URL = "https://openrouter.ai/api/v1/models"
 CATALOG_TTL_SECONDS = 600
 BENCHMARK_MODEL = os.getenv("BENCHMARK_MODEL", "google/gemini-3.1-flash-lite")
 _catalog_cache: dict[str, Any] = {"expires_at": 0.0, "models": []}
+
+
+def load_review_bank() -> dict[str, Any]:
+    if not REVIEWS_PATH.exists():
+        return {"category_review_attributes": {}, "products": {}}
+    return json.loads(REVIEWS_PATH.read_text())
 
 
 def _openrouter_headers() -> dict[str, str]:
@@ -231,6 +239,50 @@ def get_benchmark_runs() -> list[dict[str, Any]]:
     return runs
 
 
+def get_products_for_review_browser() -> list[dict[str, Any]]:
+    """Return catalogue rows plus review availability for the review browser."""
+    review_bank = load_review_bank()
+    review_products = review_bank.get("products") or {}
+    rows: list[dict[str, Any]] = []
+    for product in PRODUCTS:
+        rich_reviews = (review_products.get(product["id"]) or {}).get("reviews") or []
+        rows.append(
+            {
+                "id": product["id"],
+                "name": product["name"],
+                "category": product["category"],
+                "price": product["price"],
+                "in_stock": product["in_stock"],
+                "rating": product["rating"],
+                "num_reviews": product["num_reviews"],
+                "features": product["features"],
+                "rich_review_count": len(rich_reviews),
+                "snippet_count": len(product.get("review_snippets") or []),
+            }
+        )
+    return rows
+
+
+def get_product_review_detail(product_id: str) -> dict[str, Any]:
+    safe = re.compile(r"^[A-Za-z0-9_-]+$")
+    if not safe.match(product_id):
+        raise ValueError("Invalid product id.")
+    product = PRODUCTS_BY_ID.get(product_id)
+    if product is None:
+        raise ValueError("Product not found.")
+
+    review_bank = load_review_bank()
+    rich_reviews = ((review_bank.get("products") or {}).get(product_id) or {}).get("reviews") or []
+    return {
+        "product": product,
+        "category_review_attributes": (review_bank.get("category_review_attributes") or {}).get(
+            product["category"], []
+        ),
+        "reviews": rich_reviews,
+        "fallback_snippets": product.get("review_snippets") or [],
+    }
+
+
 class AppHandler(SimpleHTTPRequestHandler):
     """Serve the local UI and same-origin JSON endpoints without exposing secrets."""
 
@@ -277,8 +329,26 @@ class AppHandler(SimpleHTTPRequestHandler):
             if route == "/api/cases":
                 self._send_json({"cases": json.loads(CASES_PATH.read_text())})
                 return
+            if route == "/api/products":
+                review_bank = load_review_bank()
+                self._send_json(
+                    {
+                        "products": get_products_for_review_browser(),
+                        "categoryReviewAttributes": review_bank.get("category_review_attributes") or {},
+                    }
+                )
+                return
+            if route == "/api/product-reviews":
+                params = parse_qs(parsed.query)
+                product_id = (params.get("product_id") or [""])[0]
+                self._send_json(get_product_review_detail(product_id))
+                return
             if route == "/api/benchmarks":
                 self._send_json({"runs": get_benchmark_runs(), "benchmarkModel": BENCHMARK_MODEL})
+                return
+            if route == "/reviews":
+                self.path = "/reviews.html"
+                super().do_GET()
                 return
             if route in {"/", "/index.html"}:
                 self.path = "/index.html"
