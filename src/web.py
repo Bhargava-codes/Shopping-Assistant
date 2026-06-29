@@ -34,7 +34,7 @@ _catalog_cache: dict[str, Any] = {"expires_at": 0.0, "models": []}
 
 def load_review_bank() -> dict[str, Any]:
     if not REVIEWS_PATH.exists():
-        return {"category_review_attributes": {}, "products": {}}
+        return {"products": {}}
     return json.loads(REVIEWS_PATH.read_text())
 
 
@@ -275,9 +275,6 @@ def get_product_review_detail(product_id: str) -> dict[str, Any]:
     rich_reviews = ((review_bank.get("products") or {}).get(product_id) or {}).get("reviews") or []
     return {
         "product": product,
-        "category_review_attributes": (review_bank.get("category_review_attributes") or {}).get(
-            product["category"], []
-        ),
         "reviews": rich_reviews,
         "fallback_snippets": product.get("review_snippets") or [],
     }
@@ -330,13 +327,7 @@ class AppHandler(SimpleHTTPRequestHandler):
                 self._send_json({"cases": json.loads(CASES_PATH.read_text())})
                 return
             if route == "/api/products":
-                review_bank = load_review_bank()
-                self._send_json(
-                    {
-                        "products": get_products_for_review_browser(),
-                        "categoryReviewAttributes": review_bank.get("category_review_attributes") or {},
-                    }
-                )
+                self._send_json({"products": get_products_for_review_browser()})
                 return
             if route == "/api/product-reviews":
                 params = parse_qs(parsed.query)

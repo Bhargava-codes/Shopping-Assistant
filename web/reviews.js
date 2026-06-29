@@ -1,6 +1,5 @@
 const reviewState = {
   products: [],
-  attributes: {},
   activeCategory: "all",
   activeProductId: "",
   detailCache: new Map(),
@@ -14,6 +13,15 @@ function categoryLabel(value) {
 
 function money(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
+}
+
+function productInitials(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
 }
 
 function filteredProducts() {
@@ -111,18 +119,6 @@ function productStats(product) {
   return stats;
 }
 
-function chips(values, className = "review-chip") {
-  const wrap = document.createElement("div");
-  wrap.className = "review-chips";
-  for (const value of values || []) {
-    const chip = document.createElement("span");
-    chip.className = className;
-    chip.textContent = value;
-    wrap.append(chip);
-  }
-  return wrap;
-}
-
 function renderReviewCard(review, index) {
   const card = document.createElement("article");
   card.className = "review-card";
@@ -148,23 +144,22 @@ function renderDetail(payload) {
 
   const header = document.createElement("div");
   header.className = "product-detail-header";
+  const photo = document.createElement("div");
+  photo.className = `product-photo product-photo-${product.category}`;
+  photo.setAttribute("aria-hidden", "true");
+  const photoMark = document.createElement("span");
+  photoMark.textContent = productInitials(product.name);
+  photo.append(photoMark);
   const titleWrap = document.createElement("div");
   const title = document.createElement("h2");
   title.textContent = product.name;
   const subtitle = document.createElement("p");
   subtitle.textContent = `${product.id} · ${categoryLabel(product.category)} · ${product.features.join(", ")}`;
   titleWrap.append(title, subtitle);
-  header.append(titleWrap);
+  header.append(photo, titleWrap);
   detail.append(header);
 
   detail.append(productStats(product));
-
-  const lens = document.createElement("section");
-  lens.className = "review-section";
-  const lensTitle = document.createElement("h3");
-  lensTitle.textContent = "Category Review Lens";
-  lens.append(lensTitle, chips(payload.category_review_attributes || []));
-  detail.append(lens);
 
   const specs = document.createElement("section");
   specs.className = "review-section";
@@ -188,7 +183,7 @@ function renderDetail(payload) {
   const reviews = document.createElement("section");
   reviews.className = "review-section";
   const reviewsTitle = document.createElement("h3");
-  reviewsTitle.textContent = payload.reviews.length ? "Rich Reviews" : "Catalogue Snippets";
+  reviewsTitle.textContent = "Reviews";
   const reviewList = document.createElement("div");
   reviewList.className = "review-card-list";
   const source = payload.reviews.length
@@ -221,7 +216,6 @@ async function initialiseReviews() {
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "Could not load products.");
     reviewState.products = payload.products || [];
-    reviewState.attributes = payload.categoryReviewAttributes || {};
     reviewState.activeProductId = reviewState.products.find((product) => product.rich_review_count > 0)?.id || reviewState.products[0]?.id || "";
     renderCategories();
     renderProductList();

@@ -4,7 +4,7 @@ This repo contains a small shopping assistant. The agent can search a local cata
 product details and reviews, and add one product to a cart.
 
 Start by improving the agent so it chooses the right product more often. If time remains, the
-interviewer may ask you to scope and build a review-insights improvement.
+interviewer may ask you to improve how product reviews help shoppers decide.
 
 ## What The Score Means
 
@@ -52,9 +52,9 @@ For the benchmark, focus on the agent behavior:
 - `src/agent.py` for the system prompt and agent loop
 - `src/tools.py` for tool descriptions and schemas
 
-For the review-insights task, you may also change:
+For the product-review task, you may also change:
 
-- `data/reviews.json` for richer review examples
+- `data/reviews.json` for review examples
 - `web/` for browser UI changes
 - `src/web.py` for local UI endpoints
 
@@ -107,12 +107,13 @@ You can also run one request directly:
 python src/run_agent.py "Find me a wireless mouse under 2000 with good reviews"
 ```
 
-## Review-Insights Task
+## Product-Review Task
 
-The catalogue has ratings and short review snippets. `data/reviews.json` adds richer review examples
-for selected products across mice, keyboards, headphones, webcams, and monitors.
+The product page currently shows basic product information and a simple list of reviews: star
+rating, use case, and review text. The reviews are intentionally raw. There is no tagging,
+summarization, or category-specific logic yet.
 
-You can browse that data in the local UI:
+You can browse the current product page in the local UI:
 
 ```bash
 python src/web.py
@@ -120,26 +121,27 @@ python src/web.py
 
 Open [http://127.0.0.1:8000/reviews](http://127.0.0.1:8000/reviews).
 
-A useful review feature should help a shopper understand the evidence behind a recommendation. For
-example, it might:
+A useful improvement should help a shopper decide whether a product is worth buying. For example,
+it might:
 
-- summarize review signals for one product
-- separate positives from risks
-- adapt the review attributes by category
-- explain whether the reviews support the shopper's stated need
-- change the agent's final answer so it cites review evidence clearly
+- summarize what buyers like and dislike
+- highlight repeated issues or risks
+- adapt the summary to the product category
+- explain whether the reviews support a shopper's specific need
+- change the agent's final answer so it uses review evidence clearly
 
+If the review data feels too thin for your idea, you may add more examples to `data/reviews.json`.
 The goal is not to build a full reviews platform. Pick a small slice, make it work, and be ready to
 explain what you chose not to build.
 
 ## Repo Map
 
 - `data/products.json`: local product catalogue
-- `data/reviews.json`: richer review examples for the review-insights task
+- `data/reviews.json`: review examples for the product-review task
 - `data/test_cases.json`: benchmark cases
 - `src/tools.py`: local tools and tool schemas
 - `src/agent.py`: model client and agent loop
 - `src/run_agent.py`: CLI for one-off runs
 - `src/web.py`: local browser UI
-- `web/reviews.html`: product and review browser
+- `web/reviews.html`: product listing and product detail page
 - `eval/evaluate.py`: benchmark runner

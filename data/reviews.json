@@ -1,12 +1,5 @@
 {
   "schema_version": 1,
-  "category_review_attributes": {
-    "mouse": ["comfort", "tracking", "connection", "battery", "durability"],
-    "keyboard": ["typing feel", "noise", "layout", "build quality", "reliability"],
-    "headphones": ["sound", "microphone", "comfort", "noise control", "durability"],
-    "webcam": ["image quality", "autofocus", "low light", "microphone", "setup"],
-    "monitor": ["motion", "color", "text clarity", "stand", "panel issues"]
-  },
   "products": {
     "p_102": {
       "reviews": [

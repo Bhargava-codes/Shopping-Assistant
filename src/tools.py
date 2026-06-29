@@ -60,9 +60,6 @@ def get_reviews(product_id: str) -> dict[str, Any]:
         "product_id": product_id,
         "category": product["category"],
         "num_reviews": product["num_reviews"],
-        "category_review_attributes": (REVIEW_BANK.get("category_review_attributes") or {}).get(
-            product["category"], []
-        ),
         "review_snippets": product["review_snippets"],
         "reviews": extended.get("reviews", []),
     }
