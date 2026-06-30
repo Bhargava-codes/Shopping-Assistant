@@ -47,6 +47,9 @@ those products more reliably.
 
 ## What You May Change
 
+The starter agent is intentionally simple and should be treated as a baseline, not production
+guidance.
+
 For the benchmark, focus on the agent behavior:
 
 - `src/agent.py` for the system prompt and agent loop

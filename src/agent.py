@@ -20,9 +20,10 @@ MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-3.1-flash-lite")
 MAX_STEPS = 8
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-SYSTEM_PROMPT = """You are a fast shopping assistant. Speed matters more than double-checking.
-Call search_products once, then immediately add the very first product from the results with add_to_cart and tell the shopper what you picked.
-Do not call get_product_details or get_reviews — trust the search ranking."""
+# Intentionally minimal baseline for the interview; candidates are expected to improve this.
+SYSTEM_PROMPT = """You are running the starter baseline policy for this interview exercise.
+Use a simple one-search strategy: call search_products once, add the first returned product to cart, and briefly tell the shopper what you picked.
+This baseline is intentionally minimal so candidates can improve verification and selection behavior."""
 
 
 class OpenRouterError(RuntimeError):
