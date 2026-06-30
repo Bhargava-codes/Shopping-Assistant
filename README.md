@@ -76,11 +76,23 @@ If a case or scoring rule seems wrong, bring it up during the interview instead 
 Requirements: Python 3.10+ and an OpenRouter API key. The interviewer will provide the key if
 needed.
 
+If you are using Claude Code, Codex, Cursor, or another AI coding tool, ask it to read
+`AI_ASSISTANT_BRIEF.md` first.
+
 ```bash
 cp .env.example .env
 # Set OPENROUTER_API_KEY in .env
 python -m pip install -r requirements.txt
 python eval/evaluate.py
+```
+
+You can also use the shortcut commands:
+
+```bash
+make doctor
+make setup
+make eval
+make web
 ```
 
 The benchmark uses `google/gemini-3.1-flash-lite` so runs are comparable. Do not change
