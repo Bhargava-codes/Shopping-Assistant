@@ -12,7 +12,7 @@ help:
 	@echo "  make eval                Run the full benchmark"
 	@echo "  make eval-fast           Run the first 3 benchmark cases"
 	@echo "  make run QUERY=\"...\"     Run one shopper request"
-	@echo "  make web                 Start the local trace/review UI"
+	@echo "  make web                 Start the local overview/trace/review UI"
 
 doctor:
 	$(PYTHON) scripts/doctor.py

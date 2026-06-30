@@ -337,11 +337,19 @@ class AppHandler(SimpleHTTPRequestHandler):
             if route == "/api/benchmarks":
                 self._send_json({"runs": get_benchmark_runs(), "benchmarkModel": BENCHMARK_MODEL})
                 return
+            if route in {"/", "/overview"}:
+                self.path = "/overview.html"
+                super().do_GET()
+                return
+            if route == "/lab":
+                self.path = "/index.html"
+                super().do_GET()
+                return
             if route == "/reviews":
                 self.path = "/reviews.html"
                 super().do_GET()
                 return
-            if route in {"/", "/index.html"}:
+            if route == "/index.html":
                 self.path = "/index.html"
             super().do_GET()
         except ValueError as error:

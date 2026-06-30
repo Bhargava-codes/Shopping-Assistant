@@ -113,8 +113,9 @@ You can inspect runs in the browser:
 python src/web.py
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000), click **Refresh score**, then inspect failed
-cases.
+Open [http://127.0.0.1:8000/overview](http://127.0.0.1:8000/overview) for a visual map of the agent flow, test cases, and product catalogue.
+
+Open [http://127.0.0.1:8000/lab](http://127.0.0.1:8000/lab), click **Refresh score**, then inspect failed cases.
 
 You can also run one request directly:
 

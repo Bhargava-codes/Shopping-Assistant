@@ -89,7 +89,8 @@ python src/web.py
 
 Then open:
 
-- `http://127.0.0.1:8000` for benchmark traces
+- `http://127.0.0.1:8000/overview` for the visual exercise map
+- `http://127.0.0.1:8000/lab` for benchmark traces
 - `http://127.0.0.1:8000/reviews` for the product-review UI
 
 ## Evaluation Notes

@@ -83,7 +83,7 @@ Or directly:
 python src/web.py
 ```
 
-Open `http://127.0.0.1:8000` for traces or `http://127.0.0.1:8000/reviews` for the review UI.
+Open `http://127.0.0.1:8000/overview` for the visual exercise map, `http://127.0.0.1:8000/lab` for traces, or `http://127.0.0.1:8000/reviews` for the review UI.
 
 ## Working Style
 

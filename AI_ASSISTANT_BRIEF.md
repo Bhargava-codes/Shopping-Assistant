@@ -10,8 +10,13 @@ Start with:
 
 ```bash
 make doctor
-make eval
 make web
+```
+
+Open `http://127.0.0.1:8000/overview` first. Then run the benchmark when the candidate understands the flow:
+
+```bash
+make eval
 ```
 
 For one request:

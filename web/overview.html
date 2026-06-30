@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Overview | Shopping Agent Lab</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Shopping Agent Lab home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span>Cartwise</span>
+        </a>
+        <nav class="topnav" aria-label="Workspace">
+          <a href="/" aria-current="page">Overview</a>
+          <a href="/lab">Agent Lab</a>
+          <a href="/reviews">Reviews</a>
+        </nav>
+        <div class="topbar-meta">
+          <span class="status-dot ready" aria-hidden="true"></span>
+          <span id="overview-status">Loading workspace...</span>
+        </div>
+      </header>
+
+      <section class="workspace overview-workspace" aria-labelledby="page-title">
+        <div class="page-heading overview-heading">
+          <div>
+            <h1 id="page-title">How this exercise works</h1>
+            <p>A shopper asks for a product. The agent can call local tools, choose one product, and the benchmark checks whether that final cart product satisfies the hard constraints.</p>
+          </div>
+          <div class="overview-actions">
+            <a class="secondary-button" href="/lab">Open runner</a>
+            <a class="secondary-button" href="/reviews">Browse products</a>
+          </div>
+        </div>
+
+        <section class="flow-strip" aria-label="Agent flow">
+          <article class="flow-step">
+            <span class="section-number">01</span>
+            <h2>Shopper query</h2>
+            <p>Natural-language request from one seeded test case or a custom playground query.</p>
+          </article>
+          <article class="flow-step">
+            <span class="section-number">02</span>
+            <h2>Agent policy</h2>
+            <p>The starter policy lives in <code>src/agent.py</code>. Candidates improve its behavior.</p>
+          </article>
+          <article class="flow-step">
+            <span class="section-number">03</span>
+            <h2>Local tools</h2>
+            <p><code>search_products</code>, <code>get_product_details</code>, <code>get_reviews</code>, and <code>add_to_cart</code>.</p>
+          </article>
+          <article class="flow-step">
+            <span class="section-number">04</span>
+            <h2>Benchmark</h2>
+            <p>The score checks the final cart product against category, budget, rating, stock, and features.</p>
+          </article>
+        </section>
+
+        <section class="overview-grid" aria-label="Exercise data">
+          <article class="panel overview-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-number">A</span>
+                <h2>Test cases</h2>
+              </div>
+              <span class="trace-count" id="overview-case-count">0 cases</span>
+            </div>
+            <div class="overview-panel-body">
+              <p class="overview-note">These are shopper requests plus hard scoring constraints. Use them to understand failure patterns, not to hard-code answers.</p>
+              <div class="case-preview-list" id="case-preview-list"></div>
+            </div>
+          </article>
+
+          <article class="panel overview-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-number">B</span>
+                <h2>Product catalogue</h2>
+              </div>
+              <span class="trace-count" id="overview-product-count">0 products</span>
+            </div>
+            <div class="overview-panel-body">
+              <p class="overview-note">Products, specs, ratings, stock, and review snippets come from local JSON files.</p>
+              <div class="catalog-summary" id="catalog-summary"></div>
+              <div class="product-preview-list" id="product-preview-list"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel command-panel" aria-labelledby="command-title">
+          <div class="panel-heading">
+            <div>
+              <span class="section-number">C</span>
+              <h2 id="command-title">Live-call commands</h2>
+            </div>
+          </div>
+          <div class="command-grid">
+            <div><code>make doctor</code><span>Check setup without model calls</span></div>
+            <div><code>make eval</code><span>Run all benchmark cases</span></div>
+            <div><code>make web</code><span>Start this local browser UI</span></div>
+            <div><code>make run QUERY="..."</code><span>Run one shopper request</span></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/overview.js"></script>
+  </body>
+</html>
