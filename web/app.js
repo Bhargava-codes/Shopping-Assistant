@@ -1,204 +1,145 @@
-const state = { models: [], cases: [], benchmarks: [], benchmarkModel: "", selectedModel: "google/gemini-3.1-flash-lite", answer: "", activeRun: null };
+const state = {
+  benchmarks: [],
+  benchmarkModel: "",
+  activeRun: null,
+  activeCaseId: "",
+  products: [],
+  productDetails: new Map(),
+  activeProductId: "",
+};
 
 const $ = (selector) => document.querySelector(selector);
-const modelPicker = $("#model-picker");
-const modelSearch = $("#model-search");
-const modelList = $("#model-list");
-const toolFilter = $("#tool-filter");
-const query = $("#query");
 
-function safeText(value) { return value == null ? "" : String(value); }
-function selectedModel() { return state.models.find((model) => model.id === state.selectedModel); }
-function formatMoney(value) { return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 5 }).format(value || 0); }
-function formatLatency(value) { return value >= 1000 ? `${(value / 1000).toFixed(2)}s` : `${value || 0}ms`; }
-
-function setCatalogStatus(text, ready = false) {
-  $("#catalog-status").textContent = text;
-  $(".status-dot").style.background = ready ? "#0a8754" : "#e4a000";
+function safeText(value) {
+  return value == null ? "" : String(value);
 }
 
-function renderModelDetail() {
-  const model = selectedModel();
-  if (!model) {
-    $("#model-detail").textContent = "Choose a model from the live catalog.";
-    return;
-  }
-  const capability = model.supportsTools ? "Tools enabled" : "No tool support";
-  const context = model.contextLength ? `${new Intl.NumberFormat().format(model.contextLength)} context` : "Context not listed";
-  $("#model-detail").textContent = `${model.id} · ${capability} · ${context}`;
-  modelSearch.value = model.name;
+function categoryLabel(value) {
+  return safeText(value).replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function modelMatches(model, needle) {
-  return [model.id, model.name, model.provider, model.description].join(" ").toLowerCase().includes(needle);
+function money(value) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
 }
 
-function renderModelList() {
-  const needle = modelSearch.value.trim().toLowerCase();
-  const filtered = state.models.filter((model) => (!toolFilter.checked || model.supportsTools) && modelMatches(model, needle)).slice(0, 140);
-  modelList.replaceChildren();
-  if (!filtered.length) {
-    const empty = document.createElement("p");
-    empty.className = "model-option";
-    empty.textContent = "No matching live models.";
-    modelList.append(empty);
-    return;
-  }
-  for (const model of filtered) {
-    const option = document.createElement("button");
-    option.type = "button";
-    option.className = `model-option${model.id === state.selectedModel ? " active" : ""}`;
-    option.role = "option";
-    option.setAttribute("aria-selected", String(model.id === state.selectedModel));
-    const name = document.createElement("strong");
-    name.textContent = model.name;
-    const id = document.createElement("small");
-    id.textContent = model.id;
-    option.append(name, id);
-    if (model.supportsTools) {
-      const tag = document.createElement("span");
-      tag.className = "tool-tag";
-      tag.textContent = "TOOLS";
-      option.append(tag);
-    }
-    option.addEventListener("click", () => {
-      state.selectedModel = model.id;
-      renderModelDetail();
-      renderModelList();
-      closeModelPicker();
-    });
-    modelList.append(option);
-  }
+function setStatus(text, ready = true) {
+  $("#page-status").textContent = text;
+  $(".status-dot").classList.toggle("ready", ready);
 }
 
-function openModelPicker() { modelPicker.classList.add("open"); modelSearch.setAttribute("aria-expanded", "true"); renderModelList(); }
-function closeModelPicker() { modelPicker.classList.remove("open"); modelSearch.setAttribute("aria-expanded", "false"); }
+function productLine(product) {
+  if (!product) return "No product selected.";
+  return `${product.name} (${product.id}) · ${money(product.price)} · ${product.rating} stars · ${product.in_stock ? "in stock" : "out of stock"}`;
+}
 
-function setMetrics(metrics = {}) {
-  $("#metric-model-calls").textContent = metrics.modelCalls ?? "—";
-  $("#metric-tool-calls").textContent = metrics.toolCalls ?? "—";
-  $("#metric-latency").textContent = metrics.latencyMs == null ? "—" : formatLatency(metrics.latencyMs);
-  $("#metric-cost").textContent = metrics.cost == null ? "—" : formatMoney(metrics.cost);
+function latestComparableRun() {
+  const completeRuns = state.benchmarks.filter((run) => run.complete);
+  if (completeRuns.length) return completeRuns[0];
+  return [...state.benchmarks].sort((a, b) => b.casesRun - a.casesRun)[0] || null;
 }
 
 function renderBenchmark() {
-  const fullRun = state.benchmarks.find((run) => run.complete && run.models.includes(state.benchmarkModel));
-  const latestRun = fullRun || state.benchmarks[0];
-  const score = $("#benchmark-score");
-  const message = $("#benchmark-message");
-  const failures = $("#benchmark-failures");
-  failures.replaceChildren();
-  failures.hidden = true;
+  const run = latestComparableRun();
+  state.activeRun = run;
+  const list = $("#case-review-list");
+  list.replaceChildren();
 
-  if (!latestRun) {
-    score.textContent = "—";
-    message.textContent = `No comparable benchmark yet. Run all 18 cases with ${state.benchmarkModel}, then refresh.`;
+  if (!run) {
+    $("#benchmark-score").textContent = "-";
+    $("#benchmark-message").textContent = "No benchmark run found. Run `make eval`, then refresh.";
+    $("#case-count").textContent = "0 cases";
+    list.append(emptyBlock("Run `make eval` in the terminal, then click Refresh."));
     return;
   }
-  if (!fullRun && latestRun.complete) {
-    score.textContent = "—";
-    message.textContent = `Latest full run used ${latestRun.models.join(", ") || "an unknown model"}, not the pinned benchmark model ${state.benchmarkModel}. Rerun it.`;
-    return;
-  }
-  if (!latestRun.complete) {
-    score.textContent = `${latestRun.passed} / ${latestRun.casesRun}`;
-    message.textContent = `Latest run (${latestRun.directory}) is partial, so it is not a valid candidate score. Run all ${latestRun.expectedCases} cases.`;
-    return;
-  }
-  score.textContent = `${latestRun.passed} / ${latestRun.expectedCases}`;
-  const model = latestRun.models.length ? latestRun.models.join(", ") : "model not recorded";
-  message.textContent = `${latestRun.scorePercent}% · ${latestRun.directory} · ${model}`;
-  state.activeRun = latestRun;
-  for (const item of latestRun.cases) {
-    const row = document.createElement("li");
-    row.className = `benchmark-case ${item.passed ? "ok" : "bad"}`;
+
+  $("#benchmark-score").textContent = `${run.passed} / ${run.casesRun}`;
+  const completeness = run.complete ? "complete" : `partial (${run.casesRun} of ${run.expectedCases})`;
+  const instruction = run.complete ? "" : " · run `make eval` to generate all 18 cases";
+  $("#benchmark-message").textContent = `${run.directory} · ${completeness} · ${run.models.join(", ") || "model not recorded"}${instruction}`;
+  $("#case-count").textContent = `${run.cases.length} case${run.cases.length === 1 ? "" : "s"}`;
+
+  for (const item of run.cases) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `case-review-row ${item.passed ? "ok" : "bad"}${item.id === state.activeCaseId ? " active" : ""}`;
     const id = document.createElement("strong");
     id.textContent = item.id;
-    const dot = document.createElement("span");
-    dot.className = "case-verdict";
-    dot.textContent = item.passed ? "PASS" : "FAIL";
+    const verdict = document.createElement("span");
+    verdict.className = "case-verdict";
+    verdict.textContent = item.passed ? "PASS" : "FAIL";
     const issue = document.createElement("span");
     issue.className = "case-issue";
     issue.textContent = item.issue;
-    const inspect = document.createElement("button");
-    inspect.type = "button";
-    inspect.textContent = "Inspect";
-    inspect.addEventListener("click", () => inspectCase(latestRun.directory, item.id));
-    row.append(id, dot, issue, inspect);
-    failures.append(row);
+    button.append(id, verdict, issue);
+    button.addEventListener("click", () => inspectCase(run.directory, item.id));
+    list.append(button);
   }
-  failures.hidden = false;
+
+  if (!state.activeCaseId && run.cases.length) {
+    const firstFailure = run.cases.find((item) => !item.passed) || run.cases[0];
+    inspectCase(run.directory, firstFailure.id);
+  }
 }
 
 async function loadBenchmarks() {
   try {
     const response = await fetch("/api/benchmarks");
     const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || "Could not read benchmark traces.");
+    if (!response.ok) throw new Error(payload.error || "Could not read benchmark results.");
     state.benchmarks = payload.runs || [];
-    state.benchmarkModel = payload.benchmarkModel || state.benchmarkModel;
+    state.benchmarkModel = payload.benchmarkModel || "";
+    if (state.activeRun && !state.benchmarks.some((run) => run.directory === state.activeRun.directory)) {
+      state.activeCaseId = "";
+    }
     renderBenchmark();
+    setStatus("Benchmark loaded");
   } catch (error) {
-    $("#benchmark-message").textContent = error.message;
+    setStatus(error.message, false);
   }
-}
-
-function loadFixture(id) {
-  const fixture = state.cases.find((item) => item.id === id);
-  if (!fixture) return;
-  $("#case-select").value = fixture.id;
-  query.value = fixture.query;
-  query.focus();
-  $("#run-status").textContent = `Loaded ${fixture.id}. Run it in the playground and inspect the trajectory.`;
 }
 
 async function inspectCase(directory, caseId) {
-  const dialog = $("#inspector");
-  const body = $("#inspector-body");
-  $("#inspector-title").textContent = `${caseId}`;
-  body.innerHTML = "<p class='inspector-loading'>Loading trace…</p>";
-  dialog.hidden = false;
-  dialog.classList.add("open");
-  document.body.classList.add("inspector-locked");
+  state.activeCaseId = caseId;
+  renderBenchmark();
+  $("#case-detail-status").textContent = "Loading";
+  const detail = $("#case-detail");
+  detail.replaceChildren(emptyBlock("Loading case..."));
+
   try {
     const response = await fetch(`/api/trace?dir=${encodeURIComponent(directory)}&case=${encodeURIComponent(caseId)}`);
     const trace = await response.json();
-    if (!response.ok) throw new Error(trace.error || "Could not load this trace.");
-    renderInspector(trace);
+    if (!response.ok) throw new Error(trace.error || "Could not load case.");
+    renderCaseDetail(trace);
   } catch (error) {
-    body.innerHTML = "";
-    const message = document.createElement("p");
-    message.className = "inspector-loading";
-    message.textContent = error.message;
-    body.append(message);
+    $("#case-detail-status").textContent = "Error";
+    detail.replaceChildren(emptyBlock(error.message));
   }
 }
 
-function renderInspector(trace) {
-  const body = $("#inspector-body");
-  body.replaceChildren();
-  $("#inspector-title").textContent = `${trace.caseId} · ${trace.passed ? "PASS" : "FAIL"}`;
+function renderCaseDetail(trace) {
+  $("#case-detail-status").textContent = trace.passed ? "PASS" : "FAIL";
+  const detail = $("#case-detail");
+  detail.replaceChildren();
 
-  const query = document.createElement("p");
-  query.className = "inspector-query";
-  query.textContent = `"${trace.query}"`;
-  body.append(query);
+  const query = caseSection("Query");
+  query.append(textBlock(trace.query || "(missing query)", "case-query-text"));
 
-  if (trace.error) {
-    const err = document.createElement("div");
-    err.className = "cart-outcome warning";
-    err.textContent = `Run errored: ${trace.error}`;
-    body.append(err);
-  }
+  const output = caseSection("Assistant output");
+  output.append(textBlock(trace.finalText || "(no final response)", "case-output-text"));
 
-  // Constraint diagnosis — the "why".
-  const constraintSection = inspectorSection("Hard constraints (what the score checks)");
+  const selected = caseSection("Selected product");
+  selected.append(textBlock(productLine(trace.recommendedProduct), "case-product-text"));
+
+  const reason = caseSection(trace.passed ? "Why wrong" : "Why wrong");
+  reason.append(textBlock(trace.passed ? "Not wrong: passed." : (trace.failedConstraints || []).join("; ") || trace.error || "No failure reason recorded.", trace.passed ? "case-pass-text" : "case-fail-text"));
+
+  const constraints = caseSection("Constraint check");
   const list = document.createElement("ul");
   list.className = "constraint-list";
   if (!trace.diagnosis.length) {
     const row = document.createElement("li");
     row.className = "constraint-row bad";
-    row.innerHTML = "<span class='constraint-mark'>✗</span><span class='constraint-label'>No product added</span><span class='constraint-detail'>The agent never added a valid product to the cart, so the case is incomplete.</span>";
+    row.innerHTML = "<span class='constraint-mark'>x</span><span class='constraint-label'>Cart</span><span class='constraint-detail'>No valid product was added.</span>";
     list.append(row);
   } else {
     for (const check of trace.diagnosis) {
@@ -206,186 +147,185 @@ function renderInspector(trace) {
       row.className = `constraint-row ${check.ok ? "ok" : "bad"}`;
       const mark = document.createElement("span");
       mark.className = "constraint-mark";
-      mark.textContent = check.ok ? "✓" : "✗";
+      mark.textContent = check.ok ? "OK" : "NO";
       const label = document.createElement("span");
       label.className = "constraint-label";
       label.textContent = check.label;
-      const detail = document.createElement("span");
-      detail.className = "constraint-detail";
-      detail.textContent = check.ok ? `${check.actual}` : `need ${check.expected} · got ${check.actual}`;
-      row.append(mark, label, detail);
+      const value = document.createElement("span");
+      value.className = "constraint-detail";
+      value.textContent = check.ok ? check.actual : `need ${check.expected}; got ${check.actual}`;
+      row.append(mark, label, value);
       list.append(row);
     }
   }
-  constraintSection.append(list);
-  body.append(constraintSection);
+  constraints.append(list);
 
-  // Chosen product.
-  const cartSection = inspectorSection("Cart outcome");
-  const product = trace.recommendedProduct;
-  const outcome = document.createElement("div");
-  outcome.className = `cart-outcome ${trace.passed ? "success" : "warning"}`;
-  outcome.textContent = product
-    ? `Added ${product.id} — ${product.name} · ₹${product.price} · ${product.rating}★ · ${product.in_stock ? "in stock" : "out of stock"} · [${product.features.join(", ")}]`
-    : "No product was added to the cart. The evaluator marks this case incomplete.";
-  cartSection.append(outcome);
-  body.append(cartSection);
-
-  // Trajectory — what the agent actually did.
-  const tools = trace.trajectory.filter((event) => event.type === "tool_call").map((event) => event.name);
-  const traceSection = inspectorSection(`What the agent did · ${trace.trajectory.length} events · tools: ${tools.length ? [...new Set(tools)].join(", ") : "none"}`);
-  const traceList = document.createElement("ol");
-  traceList.className = "trace-list";
-  appendTraceEvents(traceList, trace.trajectory, { openLast: false });
-  traceSection.append(traceList);
-  body.append(traceSection);
-
-  // Final message.
-  const finalSection = inspectorSection("Final message to the shopper");
-  const finalText = document.createElement("div");
-  finalText.className = "inspector-final";
-  finalText.textContent = trace.finalText || "(the agent returned no final text)";
-  finalSection.append(finalText);
-  body.append(finalSection);
+  detail.append(query, output, selected, reason, constraints);
 }
 
-function inspectorSection(title) {
+function caseSection(title) {
   const section = document.createElement("section");
-  section.className = "inspector-section";
+  section.className = "case-section";
   const heading = document.createElement("h3");
   heading.textContent = title;
   section.append(heading);
   return section;
 }
 
-function closeInspector() {
-  const dialog = $("#inspector");
-  dialog.classList.remove("open");
-  dialog.hidden = true;
-  document.body.classList.remove("inspector-locked");
+function textBlock(text, className) {
+  const block = document.createElement("div");
+  block.className = `case-text ${className}`;
+  block.textContent = text;
+  return block;
 }
 
-function eventLabel(event) {
-  if (event.type === "model_call") return `Model turn ${event.step}`;
-  return event.name.replaceAll("_", " ");
+function emptyBlock(message) {
+  const block = document.createElement("div");
+  block.className = "trace-empty";
+  block.textContent = message;
+  return block;
 }
 
-function appendTraceEvents(listEl, events, { openLast = true } = {}) {
-  listEl.replaceChildren();
-  events.forEach((event, index) => {
-    const item = document.createElement("li");
-    item.className = `trace-event ${event.type === "tool_call" ? "tool" : "model"}`;
-    item.dataset.index = index + 1;
-    const details = document.createElement("details");
-    details.open = openLast && index === events.length - 1;
-    const summary = document.createElement("summary");
-    const kind = document.createElement("span");
-    kind.className = "trace-kind";
-    kind.textContent = event.type === "tool_call" ? "↳" : "✦";
-    const label = document.createElement("span");
-    label.className = "trace-label";
-    label.textContent = eventLabel(event);
-    const meta = document.createElement("span");
-    meta.className = "trace-meta";
-    meta.textContent = event.type === "model_call" ? formatLatency(event.latency_ms) : `step ${event.step}`;
-    summary.append(kind, label, meta);
-    const payload = document.createElement("pre");
-    payload.className = "trace-payload";
-    payload.textContent = JSON.stringify(event.type === "tool_call" ? { input: event.input, result: event.result } : { model: event.resolved_model, generation_id: event.generation_id, usage: event.usage }, null, 2);
-    details.append(summary, payload);
-    item.append(details);
-    listEl.append(item);
+function filteredProducts() {
+  const needle = $("#product-search").value.trim().toLowerCase();
+  return state.products.filter((product) => {
+    if (!needle) return true;
+    return [product.id, product.name, product.category, ...(product.features || [])].join(" ").toLowerCase().includes(needle);
   });
 }
 
-function renderTrace(events) {
-  const traceList = $("#trace-list");
-  const traceEmpty = $("#trace-empty");
-  $("#trace-count").textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
-  if (!events.length) {
-    traceList.hidden = true;
-    traceEmpty.hidden = false;
+function renderProductList() {
+  const list = $("#product-list");
+  list.replaceChildren();
+  const products = filteredProducts();
+  if (!products.length) {
+    list.append(emptyBlock("No products match the search."));
     return;
   }
-  traceList.hidden = false;
-  traceEmpty.hidden = true;
-  appendTraceEvents(traceList, events);
+  if (!products.some((product) => product.id === state.activeProductId)) {
+    state.activeProductId = products[0].id;
+    loadProductDetail(state.activeProductId);
+  }
+  for (const product of products) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `product-row${product.id === state.activeProductId ? " active" : ""}`;
+    const title = document.createElement("strong");
+    title.textContent = product.name;
+    const meta = document.createElement("span");
+    meta.textContent = `${product.id} · ${categoryLabel(product.category)} · ${money(product.price)} · ${product.rating} stars`;
+    const tags = document.createElement("span");
+    tags.className = "product-row-tags";
+    tags.textContent = `${product.in_stock ? "In stock" : "Out of stock"} · ${(product.features || []).join(", ")}`;
+    button.append(title, meta, tags);
+    button.addEventListener("click", () => {
+      state.activeProductId = product.id;
+      renderProductList();
+      loadProductDetail(product.id);
+    });
+    list.append(button);
+  }
 }
 
-function renderRun(result) {
-  state.answer = result.finalText || "";
-  $("#answer-empty").hidden = true;
-  const answer = $("#answer-content");
-  answer.hidden = false;
-  answer.textContent = state.answer || "The model returned no final text.";
-  $("#copy-answer").disabled = !state.answer;
-  const outcome = $("#cart-outcome");
-  outcome.hidden = false;
-  outcome.className = `cart-outcome ${result.cartProductId ? "success" : "warning"}`;
-  outcome.textContent = result.cartProductId ? `Cart recommendation: ${result.cartProductId}` : "No product was added to the cart. The evaluator would mark this run incomplete.";
-  setMetrics(result.metrics);
-  renderTrace(result.trajectory || []);
-}
-
-async function runAgent() {
-  const button = $("#run-button");
-  const status = $("#run-status");
-  if (!state.selectedModel) { status.textContent = "Choose a tool-capable model first."; return; }
-  button.disabled = true;
-  status.textContent = "Running model and local tools…";
+async function loadProducts() {
   try {
-    const response = await fetch("/api/run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: query.value, model: state.selectedModel }) });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "The agent run failed.");
-    renderRun(result);
-    status.textContent = `Completed with ${result.metrics.resolvedModel}.`;
+    const response = await fetch("/api/products");
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Could not load products.");
+    state.products = payload.products || [];
+    state.activeProductId = state.products[0]?.id || "";
+    renderProductList();
+    if (state.activeProductId) await loadProductDetail(state.activeProductId);
   } catch (error) {
-    status.textContent = error.message;
-  } finally { button.disabled = false; }
+    $("#product-list").replaceChildren(emptyBlock(error.message));
+  }
+}
+
+async function loadProductDetail(productId) {
+  const detail = $("#product-detail");
+  detail.replaceChildren(emptyBlock("Loading product..."));
+  try {
+    if (state.productDetails.has(productId)) {
+      renderProductDetail(state.productDetails.get(productId));
+      return;
+    }
+    const response = await fetch(`/api/product-reviews?product_id=${encodeURIComponent(productId)}`);
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Could not load product.");
+    state.productDetails.set(productId, payload);
+    renderProductDetail(payload);
+  } catch (error) {
+    detail.replaceChildren(emptyBlock(error.message));
+  }
+}
+
+function renderProductDetail(payload) {
+  const detail = $("#product-detail");
+  detail.replaceChildren();
+  const product = payload.product;
+
+  const title = document.createElement("div");
+  title.className = "catalogue-product-title";
+  const name = document.createElement("h3");
+  name.textContent = product.name;
+  const meta = document.createElement("p");
+  meta.textContent = `${product.id} · ${categoryLabel(product.category)} · ${money(product.price)} · ${product.rating} stars · ${product.in_stock ? "in stock" : "out of stock"}`;
+  title.append(name, meta);
+
+  const features = document.createElement("div");
+  features.className = "feature-strip";
+  for (const feature of product.features || []) {
+    const pill = document.createElement("span");
+    pill.textContent = feature;
+    features.append(pill);
+  }
+
+  const specs = caseSection("Specs");
+  const specGrid = document.createElement("dl");
+  specGrid.className = "spec-grid";
+  for (const [key, value] of Object.entries(product.specs || {})) {
+    const item = document.createElement("div");
+    item.className = "spec-item";
+    const term = document.createElement("dt");
+    term.textContent = key.replaceAll("_", " ");
+    const desc = document.createElement("dd");
+    desc.textContent = String(value);
+    item.append(term, desc);
+    specGrid.append(item);
+  }
+  specs.append(specGrid);
+
+  const reviews = caseSection("Review snippets");
+  const reviewList = document.createElement("div");
+  reviewList.className = "review-card-list";
+  const source = payload.reviews.length
+    ? payload.reviews
+    : (payload.fallback_snippets || []).map((item) => ({ ...item, use_case: "catalogue snippet" }));
+  for (const review of source.slice(0, 4)) {
+    const card = document.createElement("article");
+    card.className = "review-card";
+    const head = document.createElement("div");
+    head.className = "review-card-head";
+    const rating = document.createElement("strong");
+    rating.textContent = `${review.rating} / 5`;
+    const useCase = document.createElement("span");
+    useCase.textContent = review.use_case || "review";
+    const text = document.createElement("p");
+    text.textContent = review.text;
+    head.append(rating, useCase);
+    card.append(head, text);
+    reviewList.append(card);
+  }
+  reviews.append(reviewList);
+
+  detail.append(title, features, specs, reviews);
 }
 
 async function initialise() {
-  try {
-    const [modelsResponse, casesResponse] = await Promise.all([fetch("/api/models"), fetch("/api/cases")]);
-    const modelsPayload = await modelsResponse.json();
-    const casesPayload = await casesResponse.json();
-    if (!modelsResponse.ok) throw new Error(modelsPayload.error || "Could not load live models.");
-    state.models = modelsPayload.models;
-    state.cases = casesPayload.cases || [];
-    if (!state.models.some((model) => model.id === state.selectedModel)) {
-      state.selectedModel = state.models.find((model) => model.supportsTools)?.id || state.models[0]?.id || "";
-    }
-    for (const fixture of state.cases) {
-      const option = document.createElement("option");
-      option.value = fixture.id;
-      option.textContent = `${fixture.id} — ${fixture.query}`;
-      $("#case-select").append(option);
-    }
-    renderModelDetail();
-    setCatalogStatus(`${state.models.length} live models loaded`, true);
-    await loadBenchmarks();
-  } catch (error) {
-    setCatalogStatus(error.message, false);
-    $("#run-status").textContent = "Model catalog unavailable. Check the API key and network.";
-  }
+  await Promise.all([loadBenchmarks(), loadProducts()]);
 }
 
-modelSearch.addEventListener("focus", openModelPicker);
-modelSearch.addEventListener("input", () => { openModelPicker(); renderModelList(); });
-toolFilter.addEventListener("change", renderModelList);
-$("#model-clear").addEventListener("click", () => { modelSearch.value = ""; openModelPicker(); });
-document.addEventListener("click", (event) => { if (!modelPicker.contains(event.target)) closeModelPicker(); });
-$("#run-button").addEventListener("click", runAgent);
 $("#refresh-benchmark").addEventListener("click", loadBenchmarks);
-query.addEventListener("keydown", (event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter") runAgent(); });
-$("#case-select").addEventListener("change", (event) => {
-  if (event.target.value) loadFixture(event.target.value);
-});
-$("#copy-answer").addEventListener("click", async () => {
-  await navigator.clipboard.writeText(state.answer);
-  $("#run-status").textContent = "Answer copied.";
-});
-$("#inspector").addEventListener("click", (event) => { if (event.target.closest("[data-close]")) closeInspector(); });
-document.addEventListener("keydown", (event) => { if (event.key === "Escape" && $("#inspector").classList.contains("open")) closeInspector(); });
+$("#product-search").addEventListener("input", renderProductList);
 
 initialise();

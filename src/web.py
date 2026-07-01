@@ -1,4 +1,4 @@
-"""Local web console for running and inspecting the shopping assistant."""
+"""Local benchmark review console for the shopping assistant."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ def _openrouter_headers() -> dict[str, str]:
         "Authorization": f"Bearer {api_key}",
         "Accept": "application/json",
         "HTTP-Referer": os.getenv("OPENROUTER_SITE_URL", "http://localhost:8000"),
-        "X-OpenRouter-Title": os.getenv("OPENROUTER_APP_NAME", "Shopping Agent Lab"),
+        "X-OpenRouter-Title": os.getenv("OPENROUTER_APP_NAME", "Cartwise Benchmark Review"),
     }
 
 
@@ -166,7 +166,7 @@ def diagnose_constraints(
 
 
 def get_trace(directory: str, case_id: str) -> dict[str, Any]:
-    """Load one persisted benchmark trace and attach a per-constraint diagnosis."""
+    """Load one persisted benchmark result and attach a per-constraint diagnosis."""
     safe = re.compile(r"^[A-Za-z0-9_-]+$")
     if not safe.match(directory) or not safe.match(case_id):
         raise ValueError("Invalid trace identifier.")
@@ -191,7 +191,6 @@ def get_trace(directory: str, case_id: str) -> dict[str, Any]:
         "failedConstraints": failures,
         "error": error,
         "passed": bool(trace.get("recommended_product_id")) and not failures and not error,
-        "trajectory": trace.get("trajectory", []),
     }
 
 
@@ -337,11 +336,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             if route == "/api/benchmarks":
                 self._send_json({"runs": get_benchmark_runs(), "benchmarkModel": BENCHMARK_MODEL})
                 return
-            if route in {"/", "/overview"}:
-                self.path = "/overview.html"
-                super().do_GET()
-                return
-            if route == "/lab":
+            if route == "/":
                 self.path = "/index.html"
                 super().do_GET()
                 return
@@ -380,13 +375,13 @@ class AppHandler(SimpleHTTPRequestHandler):
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the local Shopping Agent Lab UI.")
+    parser = argparse.ArgumentParser(description="Run the local Cartwise benchmark review UI.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     load_dotenv(ROOT / ".env")
     server = ThreadingHTTPServer((args.host, args.port), AppHandler)
-    print(f"Shopping Agent Lab running at http://{args.host}:{args.port}")
+    print(f"Cartwise benchmark review running at http://{args.host}:{args.port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

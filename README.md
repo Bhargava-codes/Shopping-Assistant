@@ -3,8 +3,8 @@
 This repo contains a small shopping assistant. The agent can search a local catalogue, inspect
 product details and reviews, and add one product to a cart.
 
-Start by improving the agent so it chooses the right product more often. If time remains, the
-interviewer may ask you to improve how product reviews help shoppers decide.
+Your task is to improve the assistant's product choice quality for shopper requests. We care about
+both the final benchmark result and how you reason about product fit, evidence, and trade-offs.
 
 ## What The Score Means
 
@@ -29,41 +29,37 @@ matches the hard requirements for that request:
 - in stock when required
 - required features are present
 
-The score is intentionally simple: it only checks the final cart product. The traces are there to
-help you understand how the agent got there.
+The score checks the final cart product. Each run also writes a short summary and can be inspected
+in the local browser UI. Both views focus on the shopper query, assistant output, selected product,
+and why the case failed.
 
-## Where The Cases Come From
+## Working The Exercise
 
-The 18 cases in `data/test_cases.json` are seeded examples of common shopping-agent mistakes:
+Start by running the benchmark and inspecting the result before editing. Look for:
 
-- going over budget
-- choosing the first plausible result too quickly
-- trusting a product without verifying specifications
-- ignoring review quality
-- adding out-of-stock items
+- what the shopper asked for
+- what the assistant replied
+- which product was selected
+- why the selected product was wrong, if it failed
+- whether retrieval returned the right candidates
+- whether tool outputs match the catalogue source and expected units
+- whether review evidence is complete enough to trust
+- whether the cart action should accept the selected product
 
-Every case has at least one valid product in the local catalogue. The task is to make the agent find
-those products more reliably.
+Make a small, explainable improvement. Avoid hard-coding case IDs, product IDs, or fixture-specific
+answers. The goal is a general shopping-assistant behavior that would still make sense on new
+shopper requests.
 
 ## What You May Change
 
-The starter agent is intentionally simple and should be treated as a baseline, not production
-guidance.
-
 For the benchmark, focus on the agent behavior:
 
-- `src/agent.py` for the system prompt and agent loop
-- `src/tools.py` for tool descriptions and schemas
-
-For the product-review task, you may also change:
-
-- `data/reviews.json` for review examples
-- `web/` for browser UI changes
-- `src/web.py` for local UI endpoints
+- `src/agent.py` for the model instructions and agent loop
+- `src/tools.py` for retrieval, product-detail, review, and cart tool behavior
 
 You may use any AI tooling you like.
 
-## Do Not Change
+## Do Not Change During The Interview
 
 - `data/products.json`
 - `data/test_cases.json`
@@ -76,7 +72,7 @@ If a case or scoring rule seems wrong, bring it up during the interview instead 
 Requirements: Python 3.10+ and an OpenRouter API key. The interviewer will provide the key if
 needed.
 
-If you are using Claude Code, Codex, Cursor, or another AI coding tool, ask it to read
+If you are using Claude Code, Codex, Cursor, Cline, or another AI coding tool, ask it to read
 `AI_ASSISTANT_BRIEF.md` first.
 
 ```bash
@@ -100,64 +96,50 @@ The benchmark uses `google/gemini-3.1-flash-lite` so runs are comparable. Do not
 
 ## Inspect Failures
 
-Each benchmark run writes traces under `eval/results/<timestamp>/`. These traces show:
+Each benchmark run writes files under `eval/results/<timestamp>/`.
 
-- the shopper request
-- the product the agent added
-- which constraints passed or failed
-- the agent's tool calls and steps
-
-You can inspect runs in the browser:
+Start the local UI:
 
 ```bash
-python src/web.py
+make web
 ```
 
-Open [http://127.0.0.1:8000/overview](http://127.0.0.1:8000/overview) for a visual map of the agent flow, test cases, and product catalogue.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The benchmark review page shows each case,
+the shopper query, assistant output, selected product, and why the output was wrong. It also includes
+a product catalogue view for specs and review snippets.
 
-Open [http://127.0.0.1:8000/lab](http://127.0.0.1:8000/lab), click **Refresh score**, then inspect failed cases.
+You can also inspect the same run in the terminal:
+
+```bash
+cat eval/results/<timestamp>/summary.md
+```
+
+You can also open that markdown file in your editor if you prefer.
+
+If you need the latest run directory:
+
+```bash
+ls -t eval/results | head
+```
+
+The per-case JSON files are still available if you need deeper debugging, but the intended first
+inspection is the review UI or summary: query, assistant output, selected product, and why it was
+wrong.
 
 You can also run one request directly:
 
 ```bash
-python src/run_agent.py "Find me a wireless mouse under 2000 with good reviews"
+python src/run_agent.py "Find me a quiet wireless keyboard under 1600 for an office"
 ```
-
-## Product-Review Task
-
-The product page currently shows basic product information and a simple list of reviews: star
-rating, use case, and review text. The reviews are intentionally raw. There is no tagging,
-summarization, or category-specific logic yet.
-
-You can browse the current product page in the local UI:
-
-```bash
-python src/web.py
-```
-
-Open [http://127.0.0.1:8000/reviews](http://127.0.0.1:8000/reviews).
-
-A useful improvement should help a shopper decide whether a product is worth buying. For example,
-it might:
-
-- summarize what buyers like and dislike
-- highlight repeated issues or risks
-- adapt the summary to the product category
-- explain whether the reviews support a shopper's specific need
-- change the agent's final answer so it uses review evidence clearly
-
-If the review data feels too thin for your idea, you may add more examples to `data/reviews.json`.
-The goal is not to build a full reviews platform. Pick a small slice, make it work, and be ready to
-explain what you chose not to build.
 
 ## Repo Map
 
 - `data/products.json`: local product catalogue
-- `data/reviews.json`: review examples for the product-review task
+- `data/reviews.json`: review examples available to the agent
 - `data/test_cases.json`: benchmark cases
 - `src/tools.py`: local tools and tool schemas
 - `src/agent.py`: model client and agent loop
 - `src/run_agent.py`: CLI for one-off runs
-- `src/web.py`: local browser UI
-- `web/reviews.html`: product listing and product detail page
+- `src/web.py`: local benchmark review UI
+- `web/`: browser UI for benchmark review and product catalogue
 - `eval/evaluate.py`: benchmark runner

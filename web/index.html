@@ -4,146 +4,141 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ffffff" />
-    <title>Shopping Agent Lab</title>
+    <title>Benchmark Review | Cartwise</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <a class="brand" href="/" aria-label="Shopping Agent Lab home">
+        <a class="brand" href="/" aria-label="Cartwise benchmark review">
           <span class="brand-mark" aria-hidden="true">C</span>
           <span>Cartwise</span>
         </a>
         <nav class="topnav" aria-label="Workspace">
-          <a href="/">Overview</a>
-          <a href="/lab" aria-current="page">Agent Lab</a>
-          <a href="/reviews">Reviews</a>
+          <a href="/" aria-current="page">Benchmark Review</a>
+          <a href="/reviews">Products</a>
         </nav>
         <div class="topbar-meta">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span id="catalog-status">Loading live model catalog…</span>
+          <span class="status-dot ready" aria-hidden="true"></span>
+          <span id="page-status">Ready</span>
         </div>
       </header>
 
       <section class="workspace" aria-labelledby="page-title">
         <div class="page-heading">
           <div>
-            <h1 id="page-title">Shopping Agent Lab</h1>
+            <h1 id="page-title">Benchmark Review</h1>
+            <p>Inspect each benchmark case by shopper query, assistant output, selected product, and failure reason.</p>
           </div>
-          <label class="fixture-control">
-            <span>Evaluation fixture</span>
-            <select id="case-select" aria-label="Load an evaluation fixture case">
-              <option value="">Custom request</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="model-row">
-          <div class="model-picker" id="model-picker">
-            <label for="model-search">Playground model</label>
-            <div class="combobox-wrap">
-              <input id="model-search" type="search" autocomplete="off" placeholder="Search live OpenRouter models" aria-expanded="false" aria-controls="model-list" />
-              <button class="model-clear" id="model-clear" type="button" aria-label="Reset selected model">×</button>
-              <div class="model-list" id="model-list" role="listbox" aria-label="Live OpenRouter models"></div>
-            </div>
-            <div class="model-detail" id="model-detail">Loading model metadata…</div>
-          </div>
-          <label class="toggle">
-            <input id="tool-filter" type="checkbox" checked />
-            <span>Tool-capable only</span>
-          </label>
         </div>
 
         <section class="benchmark-bar" aria-labelledby="benchmark-title">
           <div class="benchmark-primary">
             <span class="section-number">00</span>
             <div>
-              <h2 id="benchmark-title">Benchmark score</h2>
-              <p id="benchmark-message">Run the benchmark in your terminal, then refresh this summary.</p>
+              <h2 id="benchmark-title">Latest benchmark run</h2>
+              <p id="benchmark-message">Run the benchmark in your terminal, then refresh this page.</p>
             </div>
           </div>
-          <div class="benchmark-score" id="benchmark-score">—</div>
+          <div class="benchmark-score" id="benchmark-score">-</div>
           <div class="benchmark-actions">
-            <code>python eval/evaluate.py</code>
-            <button id="refresh-benchmark" class="secondary-button" type="button">Refresh score</button>
+            <code>make eval</code>
+            <button id="refresh-benchmark" class="secondary-button" type="button">Refresh</button>
           </div>
-          <ul class="benchmark-failures" id="benchmark-failures" hidden></ul>
         </section>
 
-        <div class="lab-grid">
-          <section class="run-column" aria-label="Agent workspace">
-            <article class="panel query-panel">
-              <div class="panel-heading">
-                <div>
-                  <span class="section-number">01</span>
-                  <h2>Shopper query</h2>
-                </div>
-                <span class="shortcut">⌘ ↵</span>
-              </div>
-              <textarea id="query" rows="8">Find a wireless mouse under 2000 with good reviews.</textarea>
-              <div class="run-actions">
-                <button id="run-button" class="run-button" type="button">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z" fill="currentColor" /></svg>
-                  <span>Run agent</span>
-                </button>
-                <p id="run-status" role="status" aria-live="polite">Ready to run.</p>
-              </div>
-            </article>
-
-            <article class="panel answer-panel">
-              <div class="panel-heading">
-                <div>
-                  <span class="section-number">02</span>
-                  <h2>Assistant answer</h2>
-                </div>
-                <button id="copy-answer" class="icon-button" type="button" aria-label="Copy answer" disabled>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V8Zm-5 3a2 2 0 0 1 2-2h1v8a4 4 0 0 0 4 4h6v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9Z" fill="currentColor" /></svg>
-                </button>
-              </div>
-              <div class="answer-empty" id="answer-empty">Run a query to see the natural-language answer and cart outcome.</div>
-              <div class="answer-content" id="answer-content" hidden></div>
-              <div class="cart-outcome" id="cart-outcome" hidden></div>
-            </article>
-
-            <section class="metrics" aria-label="Run metrics">
-              <div class="metric"><span>Model calls</span><strong id="metric-model-calls">—</strong></div>
-              <div class="metric"><span>Tool calls</span><strong id="metric-tool-calls">—</strong></div>
-              <div class="metric"><span>Latency</span><strong id="metric-latency">—</strong></div>
-              <div class="metric"><span>Cost</span><strong id="metric-cost">—</strong></div>
-            </section>
-          </section>
-
-          <aside class="panel trace-panel" aria-labelledby="trace-title">
+        <div class="review-console-grid">
+          <section class="panel case-list-panel" aria-labelledby="case-list-title">
             <div class="panel-heading">
               <div>
-                <span class="section-number">03</span>
-                <h2 id="trace-title">Trajectory</h2>
+                <span class="section-number">01</span>
+                <h2 id="case-list-title">Cases</h2>
               </div>
-              <span class="trace-count" id="trace-count">0 events</span>
+              <span class="trace-count" id="case-count">0 cases</span>
             </div>
-            <div class="trace-empty" id="trace-empty">The model and each local tool call will appear here.</div>
-            <ol class="trace-list" id="trace-list" hidden></ol>
-          </aside>
+            <div class="case-review-list" id="case-review-list">
+              <div class="trace-empty">No run loaded yet.</div>
+            </div>
+          </section>
+
+          <section class="panel case-detail-panel" aria-labelledby="case-detail-title">
+            <div class="panel-heading">
+              <div>
+                <span class="section-number">02</span>
+                <h2 id="case-detail-title">Case Detail</h2>
+              </div>
+              <span class="trace-count" id="case-detail-status">Select a case</span>
+            </div>
+            <div class="case-detail" id="case-detail">
+              <div class="trace-empty">Select a benchmark case to inspect the query, assistant output, selected product, and failure reason.</div>
+            </div>
+          </section>
         </div>
+
+        <section class="panel catalogue-panel" aria-labelledby="catalogue-title">
+          <div class="panel-heading">
+            <div>
+              <span class="section-number">03</span>
+              <h2 id="catalogue-title">Product Catalogue</h2>
+            </div>
+            <label class="catalogue-search">
+              <span>Search</span>
+              <input id="product-search" type="search" placeholder="Mouse, webcam, monitor..." />
+            </label>
+          </div>
+          <div class="catalogue-grid">
+            <div class="product-list" id="product-list"></div>
+            <div class="product-detail compact" id="product-detail">
+              <div class="trace-empty">Select a product to inspect specs and reviews.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel exercise-guide-panel" aria-labelledby="exercise-guide-title">
+          <div class="panel-heading">
+            <div>
+              <span class="section-number">04</span>
+              <h2 id="exercise-guide-title">How to work this exercise</h2>
+            </div>
+          </div>
+          <div class="exercise-guide">
+            <article>
+              <h3>Start by explaining the flow</h3>
+              <p>Trace a shopper request from the query, through the agent loop and local tools, to the final cart product and benchmark result.</p>
+            </article>
+            <article>
+              <h3>Use failures as evidence</h3>
+              <p>Pick two or three failed cases. For each one, identify what the shopper asked for, what the assistant output, what product was selected, and why that product failed.</p>
+            </article>
+            <article>
+              <h3>Investigate retrieval</h3>
+              <p>Check whether search returns useful candidates for the shopper's language. Think about ranking, category matching, synonyms, fuzzy matching, and whether broad token matches create distracting results.</p>
+            </article>
+            <article>
+              <h3>Investigate tool contracts</h3>
+              <p>Do not assume every tool response has the units, fields, or filtering behavior you expect. Compare tool output against the catalogue source when something looks suspicious.</p>
+            </article>
+            <article>
+              <h3>Investigate verification</h3>
+              <p>Look at when the agent verifies category, price, rating, stock, features, specs, and review evidence before adding a product to the cart.</p>
+            </article>
+            <article>
+              <h3>Investigate selection</h3>
+              <p>Decide how the assistant should compare multiple candidates, handle soft needs like quietness or comfort, and avoid claiming unsupported features.</p>
+            </article>
+            <article>
+              <h3>Investigate cart safety</h3>
+              <p>Check whether the cart action itself protects shoppers from invalid choices, or whether the agent must prove the product is valid before calling it.</p>
+            </article>
+            <article>
+              <h3>Make a small change</h3>
+              <p>Choose one focused improvement, explain the trade-off, rerun the benchmark, and update <code>SUBMISSION.md</code> with what changed and what still is not solved.</p>
+            </article>
+          </div>
+        </section>
       </section>
     </main>
-
-    <div class="inspector" id="inspector" hidden role="dialog" aria-modal="true" aria-labelledby="inspector-title">
-      <div class="inspector-backdrop" data-close></div>
-      <div class="inspector-dialog">
-        <header class="inspector-head">
-          <div>
-            <span class="section-number">03</span>
-            <h2 id="inspector-title">Case</h2>
-          </div>
-          <button class="icon-button" id="inspector-close" data-close type="button" aria-label="Close inspector">
-            <svg viewBox="0 0 24 24" aria-hidden="true" data-close><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-          </button>
-        </header>
-        <div class="inspector-body" id="inspector-body"></div>
-      </div>
-    </div>
 
     <script src="/app.js"></script>
   </body>

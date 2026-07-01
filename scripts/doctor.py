@@ -129,12 +129,6 @@ def run_command(args: list[str], label: str) -> bool:
     return False
 
 
-def check_interviewer_only_solution() -> None:
-    solution_path = ROOT / "solution"
-    if solution_path.exists():
-        warn("`solution/` exists locally. Candidate AI tools should not inspect or use it.")
-
-
 def main() -> int:
     print("Shopping Agent Eval doctor\n")
     checks = [
@@ -150,11 +144,9 @@ def main() -> int:
             "Fixture validation passes",
         ),
     ]
-    check_interviewer_only_solution()
-
     print("")
     if all(checks):
-        ok("Setup looks ready. Next: `make eval` or `make web`.")
+        ok("Setup looks ready. Next: `make eval`, then `make web` for the review UI.")
         return 0
     fail("Setup needs attention before the benchmark will run cleanly.")
     return 1

@@ -1,5 +1,5 @@
 PYTHON ?= python
-QUERY ?= Find me a wireless mouse under 2000 with good reviews
+QUERY ?= Find me a quiet wireless keyboard under 1600 for an office
 
 .PHONY: help doctor setup check eval eval-fast run web
 
@@ -12,7 +12,7 @@ help:
 	@echo "  make eval                Run the full benchmark"
 	@echo "  make eval-fast           Run the first 3 benchmark cases"
 	@echo "  make run QUERY=\"...\"     Run one shopper request"
-	@echo "  make web                 Start the local overview/trace/review UI"
+	@echo "  make web                 Start the benchmark review UI"
 
 doctor:
 	$(PYTHON) scripts/doctor.py

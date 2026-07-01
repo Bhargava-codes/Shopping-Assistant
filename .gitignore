@@ -3,13 +3,13 @@ __pycache__/
 *.py[cod]
 .venv/
 
-# Evaluation traces are intentionally tracked so candidate runs land in the repo.
-# (Keep .gitkeep so the dir exists even when empty.)
+# Evaluation traces are local run output. Keep only .gitkeep so the directory exists.
+eval/results/*
+!eval/results/.gitkeep
 .gstack/
 
-# Interviewer-only reference (code + grading docs). Kept on disk locally (visible in the
-# editor) but never committed or published — the candidate must never receive these.
-solution/
+# Local interviewer-only notes should never be committed or published.
+.interviewer-private/
 
 # Design concept asset — not part of the candidate exercise.
 design/

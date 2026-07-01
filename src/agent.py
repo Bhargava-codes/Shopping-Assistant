@@ -1,4 +1,4 @@
-"""A deliberately naive OpenRouter tool-use loop for the interview exercise."""
+"""OpenRouter tool-use loop for the shopping assistant exercise."""
 
 from __future__ import annotations
 
@@ -20,10 +20,8 @@ MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-3.1-flash-lite")
 MAX_STEPS = 8
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Intentionally minimal baseline for the interview; candidates are expected to improve this.
-SYSTEM_PROMPT = """You are running the starter baseline policy for this interview exercise.
-Use a simple one-search strategy: call search_products once, add the first returned product to cart, and briefly tell the shopper what you picked.
-This baseline is intentionally minimal so candidates can improve verification and selection behavior."""
+SYSTEM_PROMPT = """You are a shopping assistant helping a shopper choose one product from the local catalogue.
+Keep the shopping flow short. Search the catalogue once, add the top search result to the cart, and briefly explain the choice."""
 
 
 class OpenRouterError(RuntimeError):
@@ -151,6 +149,28 @@ def run_agent(
                     "result": result,
                 }
             )
+            if name == "search_products" and isinstance(result, list):
+                if not result:
+                    return "I could not find a matching product.", trajectory, cart_product_id
+                first_product_id = result[0].get("id")
+                cart_result = dispatch("add_to_cart", {"product_id": first_product_id})
+                trajectory.append(
+                    {
+                        "type": "tool_call",
+                        "step": step,
+                        "name": "add_to_cart",
+                        "input": {"product_id": first_product_id},
+                        "result": cart_result,
+                    }
+                )
+                if isinstance(cart_result, dict) and cart_result.get("status") == "added":
+                    cart_product_id = cart_result["product_id"]
+                    return (
+                        f"I added {result[0].get('name', first_product_id)} to your cart.",
+                        trajectory,
+                        cart_product_id,
+                    )
+                return "I could not add the selected product to the cart.", trajectory, cart_product_id
             if name == "add_to_cart" and isinstance(result, dict) and result.get("status") == "added":
                 cart_product_id = result["product_id"]
             messages.append(
