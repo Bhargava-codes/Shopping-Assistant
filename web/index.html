@@ -48,11 +48,32 @@
           </div>
         </section>
 
+        <section class="panel candidate-playground" aria-labelledby="playground-title">
+          <div class="panel-heading">
+            <div>
+              <span class="section-number">01</span>
+              <h2 id="playground-title">Try a Query</h2>
+            </div>
+            <span class="trace-count" id="playground-status">Type a shopping request</span>
+          </div>
+          <div class="query-panel">
+            <textarea id="candidate-query" placeholder="Type a shopping request, e.g. &#10;Find me a quiet wireless keyboard under 1600 for an office"></textarea>
+          </div>
+          <div class="run-actions">
+            <button id="run-query" class="run-button" type="button">Run query</button>
+            <button id="seed-query" class="secondary-button" type="button">Random query</button>
+            <p>Runs the agent live and shows the selected product, trace, and metrics. Use &#8984;+Enter to run.</p>
+          </div>
+          <div class="answer-panel" id="answer-panel">
+            <div class="answer-empty">Run a query to see the assistant's response, cart product, and trace.</div>
+          </div>
+        </section>
+
         <div class="review-console-grid">
           <section class="panel case-list-panel" aria-labelledby="case-list-title">
             <div class="panel-heading">
               <div>
-                <span class="section-number">01</span>
+                <span class="section-number">02</span>
                 <h2 id="case-list-title">Cases</h2>
               </div>
               <span class="trace-count" id="case-count">0 cases</span>
@@ -65,7 +86,7 @@
           <section class="panel case-detail-panel" aria-labelledby="case-detail-title">
             <div class="panel-heading">
               <div>
-                <span class="section-number">02</span>
+                <span class="section-number">03</span>
                 <h2 id="case-detail-title">Case Detail</h2>
               </div>
               <span class="trace-count" id="case-detail-status">Select a case</span>
@@ -79,7 +100,7 @@
         <section class="panel catalogue-panel" aria-labelledby="catalogue-title">
           <div class="panel-heading">
             <div>
-              <span class="section-number">03</span>
+              <span class="section-number">04</span>
               <h2 id="catalogue-title">Product Catalogue</h2>
             </div>
             <label class="catalogue-search">

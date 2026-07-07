@@ -6,6 +6,15 @@ const state = {
   products: [],
   productDetails: new Map(),
   activeProductId: "",
+  defaultModel: "",
+  seedQueries: [
+    "Find me a quiet wireless keyboard under 1600 for an office",
+    "I need a 1080p webcam under 2000 with a privacy shutter for remote work",
+    "Recommend wireless noise-cancelling headphones under 2600 for my bus commute",
+    "Pick a mechanical keyboard below 2300 for coding at night, no number pad needed",
+    "Find a 1440p monitor under 13000 for gaming and work",
+  ],
+  running: false,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -321,11 +330,185 @@ function renderProductDetail(payload) {
   detail.append(title, features, specs, reviews);
 }
 
+async function loadHealth() {
+  try {
+    const response = await fetch("/api/health");
+    const payload = await response.json();
+    if (response.ok) state.defaultModel = payload.defaultModel || "";
+  } catch {
+    /* health is optional; default model stays empty */
+  }
+}
+
+function playgroundStatus(text, ready = true) {
+  $("#playground-status").textContent = text;
+}
+
+function renderRunResult(payload) {
+  const panel = $("#answer-panel");
+  panel.replaceChildren();
+
+  const metrics = payload.metrics || {};
+  const metricBar = document.createElement("div");
+  metricBar.className = "metrics";
+  const metricItems = [
+    ["Model", metrics.resolvedModel || "—"],
+    ["Model calls", String(metrics.modelCalls ?? 0)],
+    ["Tool calls", String(metrics.toolCalls ?? 0)],
+    ["Latency", metrics.latencyMs ? `${metrics.latencyMs} ms` : "—"],
+  ];
+  for (const [label, value] of metricItems) {
+    const cell = document.createElement("div");
+    cell.className = "metric";
+    const span = document.createElement("span");
+    span.textContent = label;
+    const strong = document.createElement("strong");
+    strong.textContent = value;
+    cell.append(span, strong);
+    metricBar.append(cell);
+  }
+  panel.append(metricBar);
+
+  const cart = document.createElement("div");
+  const cartId = payload.cartProductId;
+  if (cartId) {
+    const product = state.products.find((item) => item.id === cartId);
+    cart.className = "cart-outcome success";
+    cart.textContent = product
+      ? `Added to cart: ${product.name} (${cartId}) · ${money(product.price)} · ${product.rating} stars · ${product.in_stock ? "in stock" : "out of stock"}`
+      : `Added to cart: ${cartId}`;
+  } else {
+    cart.className = "cart-outcome warning";
+    cart.textContent = "No product was added to the cart.";
+  }
+  panel.append(cart);
+
+  const answer = document.createElement("div");
+  answer.className = "answer-content";
+  answer.textContent = payload.finalText || "(no final response)";
+  panel.append(answer);
+
+  const traceSection = document.createElement("section");
+  traceSection.className = "inspector-section";
+  const traceHeading = document.createElement("h3");
+  traceHeading.textContent = "Trace";
+  const traceList = document.createElement("ol");
+  traceList.className = "trace-list";
+  const trajectory = payload.trajectory || [];
+  trajectory.forEach((event, index) => {
+    const item = document.createElement("li");
+    item.className = `trace-event ${event.type === "tool_call" ? "tool" : "model"}`;
+    item.dataset.index = String(index + 1);
+    const summary = document.createElement("summary");
+    const kind = document.createElement("span");
+    kind.className = "trace-kind";
+    kind.textContent = event.type === "tool_call" ? "T" : "M";
+    const label = document.createElement("span");
+    label.className = "trace-label";
+    if (event.type === "tool_call") {
+      label.textContent = event.name || "tool_call";
+    } else {
+      label.textContent = `model · step ${event.step ?? index + 1}`;
+    }
+    const meta = document.createElement("span");
+    meta.className = "trace-meta";
+    if (event.type === "tool_call") {
+      meta.textContent = event.name || "";
+    } else {
+      meta.textContent = event.resolved_model || event.requested_model || "";
+    }
+    summary.append(kind, label, meta);
+    const payloadBlock = document.createElement("div");
+    payloadBlock.className = "trace-payload";
+    const shown = event.type === "tool_call" ? { input: event.input, result: event.result } : { usage: event.usage };
+    payloadBlock.textContent = JSON.stringify(shown, null, 2);
+    const details = document.createElement("details");
+    details.append(summary, payloadBlock);
+    item.append(details);
+    traceList.append(item);
+  });
+  traceSection.append(traceHeading, traceList);
+  panel.append(traceSection);
+
+  if (cartId) {
+    const product = state.products.find((item) => item.id === cartId);
+    if (product) {
+      const detail = document.createElement("div");
+      detail.className = "case-section";
+      const heading = document.createElement("h3");
+      heading.textContent = "Selected product details";
+      detail.append(heading);
+      const line = document.createElement("div");
+      line.className = "case-text case-product-text";
+      line.textContent = productLine(product);
+      detail.append(line);
+      panel.append(detail);
+    }
+  }
+}
+
+async function runCandidateQuery() {
+  if (state.running) return;
+  const query = $("#candidate-query").value.trim();
+  if (!query) {
+    playgroundStatus("Type a query first", false);
+    return;
+  }
+  state.running = true;
+  const button = $("#run-query");
+  button.disabled = true;
+  playgroundStatus("Running…");
+  const panel = $("#answer-panel");
+  panel.replaceChildren(emptyBlock("Running the agent… this calls the model and may take a few seconds."));
+  setStatus("Running query", false);
+  try {
+    const response = await fetch("/api/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, model: state.defaultModel || "google/gemini-3.1-flash-lite" }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Could not run query.");
+    renderRunResult(payload);
+    playgroundStatus("Done");
+    setStatus("Query complete");
+  } catch (error) {
+    panel.replaceChildren(emptyBlock(error.message));
+    playgroundStatus("Error", false);
+    setStatus(error.message, false);
+  } finally {
+    state.running = false;
+    button.disabled = false;
+  }
+}
+
+function seedRandomQuery() {
+  const pool = state.seedQueries;
+  const current = $("#candidate-query").value.trim();
+  let next = current;
+  let guard = 0;
+  while (next === current && guard < pool.length) {
+    next = pool[Math.floor(Math.random() * pool.length)];
+    guard += 1;
+  }
+  $("#candidate-query").value = next;
+  $("#candidate-query").focus();
+  playgroundStatus("Random query loaded — press Run");
+}
+
 async function initialise() {
-  await Promise.all([loadBenchmarks(), loadProducts()]);
+  await Promise.all([loadHealth(), loadBenchmarks(), loadProducts()]);
 }
 
 $("#refresh-benchmark").addEventListener("click", loadBenchmarks);
 $("#product-search").addEventListener("input", renderProductList);
+$("#run-query").addEventListener("click", runCandidateQuery);
+$("#seed-query").addEventListener("click", seedRandomQuery);
+$("#candidate-query").addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+    event.preventDefault();
+    runCandidateQuery();
+  }
+});
 
 initialise();
