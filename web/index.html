@@ -94,49 +94,6 @@
             </div>
           </div>
         </section>
-
-        <section class="panel exercise-guide-panel" aria-labelledby="exercise-guide-title">
-          <div class="panel-heading">
-            <div>
-              <span class="section-number">04</span>
-              <h2 id="exercise-guide-title">How to work this exercise</h2>
-            </div>
-          </div>
-          <div class="exercise-guide">
-            <article>
-              <h3>Start by explaining the flow</h3>
-              <p>Trace a shopper request from the query, through the agent loop and local tools, to the final cart product and benchmark result.</p>
-            </article>
-            <article>
-              <h3>Use failures as evidence</h3>
-              <p>Pick two or three failed cases. For each one, identify what the shopper asked for, what the assistant output, what product was selected, and why that product failed.</p>
-            </article>
-            <article>
-              <h3>Investigate retrieval</h3>
-              <p>Check whether search returns useful candidates for the shopper's language. Think about ranking, category matching, synonyms, fuzzy matching, and whether broad token matches create distracting results.</p>
-            </article>
-            <article>
-              <h3>Investigate tool contracts</h3>
-              <p>Do not assume every tool response has the units, fields, or filtering behavior you expect. Compare tool output against the catalogue source when something looks suspicious.</p>
-            </article>
-            <article>
-              <h3>Investigate verification</h3>
-              <p>Look at when the agent verifies category, price, rating, stock, features, specs, and review evidence before adding a product to the cart.</p>
-            </article>
-            <article>
-              <h3>Investigate selection</h3>
-              <p>Decide how the assistant should compare multiple candidates, handle soft needs like quietness or comfort, and avoid claiming unsupported features.</p>
-            </article>
-            <article>
-              <h3>Investigate cart safety</h3>
-              <p>Check whether the cart action itself protects shoppers from invalid choices, or whether the agent must prove the product is valid before calling it.</p>
-            </article>
-            <article>
-              <h3>Make a small change</h3>
-              <p>Choose one focused improvement, explain the trade-off, rerun the benchmark, and update <code>SUBMISSION.md</code> with what changed and what still is not solved.</p>
-            </article>
-          </div>
-        </section>
       </section>
     </main>
 

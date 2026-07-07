@@ -11,5 +11,8 @@ eval/results/*
 # Local interviewer-only notes should never be committed or published.
 .interviewer-private/
 
+# Private holdout test set — kept local only, never committed or published.
+data/holdout_cases.json
+
 # Design concept asset — not part of the candidate exercise.
 design/
