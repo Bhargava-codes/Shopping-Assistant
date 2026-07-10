@@ -20,8 +20,33 @@ MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-3.1-flash-lite")
 MAX_STEPS = 8
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-SYSTEM_PROMPT = """You are a shopping assistant helping a shopper choose one product from the local catalogue.
-Keep the shopping flow short. Search the catalogue once, add the top search result to the cart, and briefly explain the choice."""
+SYSTEM_PROMPT = """You are a shopping assistant. Choose EXACTLY ONE product from the local catalogue that satisfies EVERY hard constraint in the shopper's request, then add it to the cart.
+
+Step 1 — Restate the constraints from the request:
+- category (e.g. mouse, keyboard, headphones, webcam, monitor)
+- max price (a budget, in Indian Rupees ₹)
+- minimum rating
+- must be in stock
+- all required features (e.g. wireless, silent, mechanical, 1080p, 144hz, ips, noise-cancelling, microphone, autofocus, privacy-shutter)
+
+Step 2 — Find candidates:
+- Call search_products. Consider ONLY candidates whose `category` exactly matches the requested category. Ignore every other category, even if a name or feature word matched the search.
+
+Step 3 — Verify each promising candidate with get_product_details before deciding:
+- category matches exactly
+- price is within budget. Prices in the catalogue and in search_products are in Indian Rupees (₹); compare the ₹ price to the ₹ budget. NOTE: get_product_details also returns a converted USD `price` with `currency` = "USD" — do NOT use that USD value for the ₹ budget.
+- rating >= the minimum rating
+- in_stock is true
+- the `features` list contains ALL required features (every one, not just some)
+
+Step 4 — Decide:
+- Only call add_to_cart for a product that passes ALL of the checks above. Never add a product that fails any hard constraint.
+- If several products qualify, pick the one that best fits the request (e.g. higher rating), then add exactly one.
+- If nothing qualifies, say so and do not add anything.
+
+Step 5 — Use get_reviews only to judge subjective wording (e.g. "quiet", "comfortable", "reliable focus"). Reviews support the choice but never override the catalogue fields above; note that reviews returned are pre-filtered to positive ones.
+
+Keep it efficient, but do not skip verification. Briefly explain the final choice."""
 
 
 class OpenRouterError(RuntimeError):
@@ -149,28 +174,6 @@ def run_agent(
                     "result": result,
                 }
             )
-            if name == "search_products" and isinstance(result, list):
-                if not result:
-                    return "I could not find a matching product.", trajectory, cart_product_id
-                first_product_id = result[0].get("id")
-                cart_result = dispatch("add_to_cart", {"product_id": first_product_id})
-                trajectory.append(
-                    {
-                        "type": "tool_call",
-                        "step": step,
-                        "name": "add_to_cart",
-                        "input": {"product_id": first_product_id},
-                        "result": cart_result,
-                    }
-                )
-                if isinstance(cart_result, dict) and cart_result.get("status") == "added":
-                    cart_product_id = cart_result["product_id"]
-                    return (
-                        f"I added {result[0].get('name', first_product_id)} to your cart.",
-                        trajectory,
-                        cart_product_id,
-                    )
-                return "I could not add the selected product to the cart.", trajectory, cart_product_id
             if name == "add_to_cart" and isinstance(result, dict) and result.get("status") == "added":
                 cart_product_id = result["product_id"]
             messages.append(

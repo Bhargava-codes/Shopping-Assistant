@@ -20,25 +20,40 @@ def search_products(query: str, max_results: int = 10) -> list[dict[str, Any]]:
     if not isinstance(query, str) or not query.strip():
         return []
     if not isinstance(max_results, int):
-        max_results = 10
-    max_results = max(1, min(max_results, 8))
+        max_results = 20
+    # Allow a category-wide search to return every item in that category (there are
+    # up to 10 per category). Capping at 8 previously hid valid candidates and caused
+    # false "nothing qualifies" conclusions.
+    max_results = max(1, min(max_results, 20))
 
     tokens = set(re.findall(r"[a-z0-9]+", query.lower()))
-    hits: list[dict[str, Any]] = []
+    scored: list[tuple[int, dict[str, Any]]] = []
     for product in PRODUCTS:
-        searchable = " ".join(
-            [product["name"], product["category"], *product["features"]]
-        ).lower()
-        if any(token in searchable for token in tokens):
-            hits.append(
-                {
-                    key: product[key]
-                    for key in ("id", "name", "category", "price", "in_stock", "rating")
-                }
-            )
-        if len(hits) >= max_results:
-            break
-    return hits
+        # Weight category/feature matches higher than incidental name matches so the
+        # requested product type is surfaced instead of being crowded out by unrelated
+        # items that happen to share a keyword.
+        category_tokens = {product["category"].lower()}
+        feature_tokens = {f.lower() for f in product["features"]}
+        name_tokens = set(re.findall(r"[a-z0-9]+", product["name"].lower()))
+        score = 0
+        for token in tokens:
+            if token in category_tokens:
+                score += 5
+            if token in feature_tokens:
+                score += 3
+            if token in name_tokens:
+                score += 1
+        if score > 0:
+            scored.append((score, product))
+
+    scored.sort(key=lambda item: (-item[0], item[1]["id"]))
+    return [
+        {
+            key: product[key]
+            for key in ("id", "name", "category", "price", "in_stock", "rating", "features")
+        }
+        for _, product in scored[:max_results]
+    ]
 
 
 def get_product_details(product_id: str) -> dict[str, Any]:
