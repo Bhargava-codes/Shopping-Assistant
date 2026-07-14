@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ElecKart.com — Electronics, sorted by AI.</title>
+<meta name="description" content="ElecKart — an electronics storefront with an AI shopping assistant.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="home">
+
+<header class="ek-header">
+  <div class="ek-header__inner">
+    <a class="ek-logo" href="/">
+      <span class="ek-logo__mark">E</span>
+      ElecKart<span class="ek-logo__suffix">.com</span>
+    </a>
+    <nav class="ek-nav">
+      <a href="#browse" data-category-link="mouse">Mice</a>
+      <a href="#browse" data-category-link="keyboard">Keyboards</a>
+      <a href="#browse" data-category-link="headphones">Headphones</a>
+      <a href="#browse" data-category-link="webcam">Webcams</a>
+      <a href="#browse" data-category-link="monitor">Monitors</a>
+    </nav>
+    <button id="cartButton" class="ek-cart-button" aria-haspopup="true" aria-controls="cartDrawer">
+      Cart <span id="cartCount" class="ek-badge">0</span>
+    </button>
+  </div>
+</header>
+
+<section class="ek-hero">
+  <div class="ek-hero__inner">
+    <div class="ek-hero__copy">
+      <h1>Everything for your setup, all in one place.</h1>
+      <p>Mouse, keyboards, headphones, webcams and monitors — browse the catalogue or describe what you need to the AI assistant.</p>
+      <div class="ek-hero__ctas">
+        <a href="#browse" class="ek-btn-primary">Shop now</a>
+        <a href="#assistant" class="ek-btn-secondary">✨ Describe it. We'll find it.</a>
+      </div>
+    </div>
+    <div class="ek-hero__image ek-category-image ek-img-mouse"></div>
+  </div>
+</section>
+
+<section class="ek-categories" id="categories">
+  <div class="ek-section-head"><h2>Shop by category</h2></div>
+  <div class="ek-hero__tiles">
+    <button class="ek-tile ek-category-image ek-img-mouse" data-category-link="mouse"><span>Mice</span></button>
+    <button class="ek-tile ek-category-image ek-img-keyboard" data-category-link="keyboard"><span>Keyboards</span></button>
+    <button class="ek-tile ek-category-image ek-img-headphones" data-category-link="headphones"><span>Headphones</span></button>
+    <button class="ek-tile ek-category-image ek-img-webcam" data-category-link="webcam"><span>Webcams</span></button>
+    <button class="ek-tile ek-category-image ek-img-monitor" data-category-link="monitor"><span>Monitors</span></button>
+  </div>
+</section>
+
+<section class="ek-best-sellers" id="featured">
+  <div class="ek-section-head">
+    <h2>Best sellers this week</h2>
+    <a href="#browse">View all &rarr;</a>
+  </div>
+  <div id="bestSellerGrid" class="ek-grid--four"></div>
+</section>
+
+<section class="ek-chat" id="assistant">
+  <div class="ek-chat__inner">
+    <div class="ek-chat__intro">
+      <div class="ek-status-pill"><span class="ek-status-pill__dot"></span>Assistant is online</div>
+      <h2>✨ Describe it. We'll find it.</h2>
+      <p>Not sure what to buy? Tell the assistant your need and budget — it'll recommend a real product and add it to your cart, with your OK first.</p>
+    </div>
+    <button id="startOverBtn" class="ek-start-over" type="button">Start over</button>
+    <div class="ek-chat__panel">
+      <div id="chatThread" class="ek-chat__thread" aria-live="polite"></div>
+      <div id="chatSuggestions" class="ek-suggestions"></div>
+      <form id="chatForm" class="ek-chat__inputbar">
+        <input id="chatInput" type="text" placeholder="e.g. a good monitor for photo editing" maxlength="500" autocomplete="off">
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="ek-browse" id="browse">
+  <aside class="ek-filters">
+    <h3>Category</h3>
+    <div id="categoryFilters"></div>
+
+    <h3>Max price</h3>
+    <div class="ek-price-value">Up to <strong id="priceValueLabel">₹0</strong></div>
+    <input type="range" id="priceRange" min="0" max="0" step="100">
+
+    <h3>Minimum rating</h3>
+    <select id="ratingFilter">
+      <option value="0">Any rating</option>
+      <option value="3">3.0+</option>
+      <option value="3.5">3.5+</option>
+      <option value="4">4.0+</option>
+      <option value="4.5">4.5+</option>
+    </select>
+
+    <h3>Features</h3>
+    <div id="featureFilters"></div>
+
+    <button id="clearFiltersBtn" class="ek-clear-filters" type="button">Clear filters</button>
+  </aside>
+
+  <div>
+    <div class="ek-section-head"><h2>Browse all electronics</h2></div>
+    <div class="ek-grid-toolbar">
+      <form id="searchForm" class="ek-search-box">
+        <input id="searchInput" type="text" placeholder="Search the catalogue…" maxlength="200">
+        <button type="submit">Search</button>
+      </form>
+      <div class="ek-sort">
+        <select id="sortSelect">
+          <option value="relevance">Sort: Relevance</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating-desc">Rating: High to Low</option>
+        </select>
+      </div>
+    </div>
+    <p class="ek-results-count" id="resultsCount"></p>
+    <div id="productGrid" class="ek-grid"></div>
+  </div>
+</section>
+
+<section class="ek-trust" id="trust">
+  <div class="ek-trust__grid">
+    <div class="ek-trust-card">
+      <div class="ek-trust-card__icon"><div class="ek-trust-card__shape" style="border-radius:4px;"></div></div>
+      <div class="ek-trust-card__title">Free shipping</div>
+      <div class="ek-trust-card__desc">On every order, no minimum spend.</div>
+    </div>
+    <div class="ek-trust-card">
+      <div class="ek-trust-card__icon"><div class="ek-trust-card__shape" style="border-radius:50%;"></div></div>
+      <div class="ek-trust-card__title">2-year warranty</div>
+      <div class="ek-trust-card__desc">Full coverage on all electronics.</div>
+    </div>
+    <div class="ek-trust-card">
+      <div class="ek-trust-card__icon"><div class="ek-trust-card__shape" style="border-radius:4px 16px;"></div></div>
+      <div class="ek-trust-card__title">Easy returns</div>
+      <div class="ek-trust-card__desc">30 days, no questions asked.</div>
+    </div>
+    <div class="ek-trust-card">
+      <div class="ek-trust-card__icon"><div class="ek-trust-card__shape" style="width:14px;height:14px;border-radius:3px;"></div></div>
+      <div class="ek-trust-card__title">Secure checkout</div>
+      <div class="ek-trust-card__desc">Encrypted payments, every time.</div>
+    </div>
+  </div>
+</section>
+
+<footer class="ek-footer">
+  <div class="ek-footer__brand">
+    <span class="ek-logo__mark">E</span>
+    <span>ElecKart.com</span>
+  </div>
+  <div>&copy; 2026 ElecKart. All rights reserved.</div>
+  <div class="ek-footer__note">A demo storefront — no real payments are processed.</div>
+</footer>
+
+<div id="cartOverlay" class="ek-overlay"></div>
+<aside id="cartDrawer" class="ek-drawer" aria-hidden="true">
+  <div class="ek-drawer__header">
+    <strong>Your cart</strong>
+    <button id="closeCartBtn" aria-label="Close cart">&times;</button>
+  </div>
+  <div id="cartItems" class="ek-drawer__items"></div>
+  <div class="ek-drawer__footer">
+    <div class="ek-subtotal-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <button id="placeOrderBtn" class="ek-place-order" disabled>Place order</button>
+  </div>
+</aside>
+
+<div id="orderModalOverlay" class="ek-modal-overlay">
+  <div class="ek-modal">
+    <div class="ek-modal__icon">✅</div>
+    <h3>Order placed!</h3>
+    <p>Thanks for shopping with ElecKart. No real payment was taken — this is a demo storefront.</p>
+    <button id="closeOrderModalBtn" type="button">Continue shopping</button>
+  </div>
+</div>
+
+<div id="toast" class="ek-toast"></div>
+
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -16,3 +16,6 @@ data/holdout_cases.json
 
 # Design concept asset — not part of the candidate exercise.
 design/
+
+# ElecKart storefront event log — local runtime output, not a fixture.
+storefront_events.jsonl

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product — ElecKart.com</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="product">
+
+<header class="ek-header">
+  <div class="ek-header__inner">
+    <a class="ek-logo" href="/">
+      <span class="ek-logo__mark">E</span>
+      ElecKart<span class="ek-logo__suffix">.com</span>
+    </a>
+    <nav class="ek-nav">
+      <a href="/?category=mouse#browse" data-category-link="mouse">Mice</a>
+      <a href="/?category=keyboard#browse" data-category-link="keyboard">Keyboards</a>
+      <a href="/?category=headphones#browse" data-category-link="headphones">Headphones</a>
+      <a href="/?category=webcam#browse" data-category-link="webcam">Webcams</a>
+      <a href="/?category=monitor#browse" data-category-link="monitor">Monitors</a>
+    </nav>
+    <button id="cartButton" class="ek-cart-button" aria-haspopup="true" aria-controls="cartDrawer">
+      Cart <span id="cartCount" class="ek-badge">0</span>
+    </button>
+  </div>
+</header>
+
+<main class="ek-pdp" id="pdpRoot">
+  <p class="ek-breadcrumb"><a href="/">Home</a> / <span id="breadcrumbCategory">Product</span></p>
+  <div id="pdpContent"><p class="ek-state">Loading product…</p></div>
+</main>
+
+<footer class="ek-footer">
+  <div class="ek-footer__brand">
+    <span class="ek-logo__mark">E</span>
+    <span>ElecKart.com</span>
+  </div>
+  <div>&copy; 2026 ElecKart. All rights reserved.</div>
+  <div class="ek-footer__note">A demo storefront — no real payments are processed.</div>
+</footer>
+
+<div id="cartOverlay" class="ek-overlay"></div>
+<aside id="cartDrawer" class="ek-drawer" aria-hidden="true">
+  <div class="ek-drawer__header">
+    <strong>Your cart</strong>
+    <button id="closeCartBtn" aria-label="Close cart">&times;</button>
+  </div>
+  <div id="cartItems" class="ek-drawer__items"></div>
+  <div class="ek-drawer__footer">
+    <div class="ek-subtotal-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <button id="placeOrderBtn" class="ek-place-order" disabled>Place order</button>
+  </div>
+</aside>
+
+<div id="orderModalOverlay" class="ek-modal-overlay">
+  <div class="ek-modal">
+    <div class="ek-modal__icon">✅</div>
+    <h3>Order placed!</h3>
+    <p>Thanks for shopping with ElecKart. No real payment was taken — this is a demo storefront.</p>
+    <button id="closeOrderModalBtn" type="button">Continue shopping</button>
+  </div>
+</div>
+
+<div id="toast" class="ek-toast"></div>
+
+<script src="app.js" defer></script>
+</body>
+</html>

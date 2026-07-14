@@ -1,7 +1,7 @@
 PYTHON ?= python
 QUERY ?= Find me a quiet wireless keyboard under 1600 for an office
 
-.PHONY: help doctor setup check eval eval-fast run web
+.PHONY: help doctor setup check eval eval-fast run web store
 
 help:
 	@echo "Shopping Agent Eval commands"
@@ -13,6 +13,7 @@ help:
 	@echo "  make eval-fast           Run the first 3 benchmark cases"
 	@echo "  make run QUERY=\"...\"     Run one shopper request"
 	@echo "  make web                 Start the benchmark review UI"
+	@echo "  make store               Start the ElecKart storefront"
 
 doctor:
 	$(PYTHON) scripts/doctor.py
@@ -35,3 +36,6 @@ run:
 
 web:
 	$(PYTHON) src/web.py
+
+store:
+	$(PYTHON) src/storefront_web.py
