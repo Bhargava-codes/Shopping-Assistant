@@ -29,7 +29,7 @@ For one request:
 make run QUERY="Find me a quiet wireless keyboard under 1600 for an office"
 ```
 
-If `make` is unavailable, use the equivalent Python commands from `README.md`.
+If `make` is unavailable, use the equivalent Python commands from `BENCHMARK_EXERCISE.md`.
 
 ## What To Help With
 
