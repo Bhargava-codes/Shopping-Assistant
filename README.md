@@ -10,6 +10,23 @@ exercise this catalogue originates from, see [BENCHMARK_EXERCISE.md](BENCHMARK_E
 
 ---
 
+## Results & AI-PM decisions
+
+The agent behind this storefront was hardened against a **hard-constraint benchmark** (budget,
+category, in-stock, and feature requirements that must *all* hold before an item is added):
+
+- **1/18 → 18/18** on the benchmark, by grounding the agent in two decisions, not a bigger model:
+  - **Verify-then-add loop** — the agent re-checks every hard constraint against the product record
+    *before* proposing a cart action, so it never confidently adds a wrong item.
+  - **Category-aware retrieval** — search is scoped to the intended category first, which removed the
+    class of failures where a plausible-but-wrong-category item was surfaced.
+- **Guardrail as a product rule:** the assistant may never touch the cart without explicit shopper
+  confirmation — a trust decision, enforced in the flow, not left to the model's discretion.
+- **Measurable by design:** the AI path is instrumented against the manual browse path (event logging),
+  so "did AI help conversion" is answered with data, not vibes.
+
+---
+
 ## 1. Context
 
 An existing local dataset — 50 electronics SKUs (mouse, keyboard, headphones, webcam, monitor)
